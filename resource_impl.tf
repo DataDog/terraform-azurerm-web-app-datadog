@@ -1,0 +1,393 @@
+resource "azurerm_linux_web_app" "this" {
+  app_settings                                   = var.app_settings
+  client_affinity_enabled                        = var.client_affinity_enabled
+  client_certificate_enabled                     = var.client_certificate_enabled
+  client_certificate_exclusion_paths             = var.client_certificate_exclusion_paths
+  client_certificate_mode                        = var.client_certificate_mode
+  enabled                                        = var.enabled
+  ftp_publish_basic_authentication_enabled       = var.ftp_publish_basic_authentication_enabled
+  https_only                                     = var.https_only
+  location                                       = var.location
+  name                                           = var.name
+  public_network_access_enabled                  = var.public_network_access_enabled
+  resource_group_name                            = var.resource_group_name
+  service_plan_id                                = var.service_plan_id
+  tags                                           = var.tags
+  virtual_network_backup_restore_enabled         = var.virtual_network_backup_restore_enabled
+  virtual_network_subnet_id                      = var.virtual_network_subnet_id
+  vnet_image_pull_enabled                        = var.vnet_image_pull_enabled
+  webdeploy_publish_basic_authentication_enabled = var.webdeploy_publish_basic_authentication_enabled
+  auth_settings {
+    additional_login_parameters   = var.auth_settings.additional_login_parameters
+    enabled                       = var.auth_settings.enabled
+    issuer                        = var.auth_settings.issuer
+    token_refresh_extension_hours = var.auth_settings.token_refresh_extension_hours
+    token_store_enabled           = var.auth_settings.token_store_enabled
+    dynamic "active_directory" {
+      for_each = var.auth_settings.active_directory != null ? [true] : []
+      content {
+        allowed_audiences          = var.auth_settings.active_directory.allowed_audiences
+        client_id                  = var.auth_settings.active_directory.client_id
+        client_secret              = var.auth_settings.active_directory.client_secret
+        client_secret_setting_name = var.auth_settings.active_directory.client_secret_setting_name
+      }
+    }
+    dynamic "facebook" {
+      for_each = var.auth_settings.facebook != null ? [true] : []
+      content {
+        app_id                  = var.auth_settings.facebook.app_id
+        app_secret              = var.auth_settings.facebook.app_secret
+        app_secret_setting_name = var.auth_settings.facebook.app_secret_setting_name
+        oauth_scopes            = var.auth_settings.facebook.oauth_scopes
+      }
+    }
+    dynamic "github" {
+      for_each = var.auth_settings.github != null ? [true] : []
+      content {
+        client_id                  = var.auth_settings.github.client_id
+        client_secret              = var.auth_settings.github.client_secret
+        client_secret_setting_name = var.auth_settings.github.client_secret_setting_name
+        oauth_scopes               = var.auth_settings.github.oauth_scopes
+      }
+    }
+    dynamic "google" {
+      for_each = var.auth_settings.google != null ? [true] : []
+      content {
+        client_id                  = var.auth_settings.google.client_id
+        client_secret              = var.auth_settings.google.client_secret
+        client_secret_setting_name = var.auth_settings.google.client_secret_setting_name
+        oauth_scopes               = var.auth_settings.google.oauth_scopes
+      }
+    }
+    dynamic "microsoft" {
+      for_each = var.auth_settings.microsoft != null ? [true] : []
+      content {
+        client_id                  = var.auth_settings.microsoft.client_id
+        client_secret              = var.auth_settings.microsoft.client_secret
+        client_secret_setting_name = var.auth_settings.microsoft.client_secret_setting_name
+        oauth_scopes               = var.auth_settings.microsoft.oauth_scopes
+      }
+    }
+    dynamic "twitter" {
+      for_each = var.auth_settings.twitter != null ? [true] : []
+      content {
+        consumer_key                 = var.auth_settings.twitter.consumer_key
+        consumer_secret              = var.auth_settings.twitter.consumer_secret
+        consumer_secret_setting_name = var.auth_settings.twitter.consumer_secret_setting_name
+      }
+    }
+  }
+  auth_settings_v2 {
+    auth_enabled                            = var.auth_settings_v2.auth_enabled
+    config_file_path                        = var.auth_settings_v2.config_file_path
+    default_provider                        = var.auth_settings_v2.default_provider
+    excluded_paths                          = var.auth_settings_v2.excluded_paths
+    forward_proxy_convention                = var.auth_settings_v2.forward_proxy_convention
+    forward_proxy_custom_host_header_name   = var.auth_settings_v2.forward_proxy_custom_host_header_name
+    forward_proxy_custom_scheme_header_name = var.auth_settings_v2.forward_proxy_custom_scheme_header_name
+    http_route_api_prefix                   = var.auth_settings_v2.http_route_api_prefix
+    require_authentication                  = var.auth_settings_v2.require_authentication
+    require_https                           = var.auth_settings_v2.require_https
+    runtime_version                         = var.auth_settings_v2.runtime_version
+    unauthenticated_action                  = var.auth_settings_v2.unauthenticated_action
+    dynamic "active_directory_v2" {
+      for_each = var.auth_settings_v2.active_directory_v2 != null ? [true] : []
+      content {
+        allowed_applications                 = var.auth_settings_v2.active_directory_v2.allowed_applications
+        allowed_audiences                    = var.auth_settings_v2.active_directory_v2.allowed_audiences
+        allowed_groups                       = var.auth_settings_v2.active_directory_v2.allowed_groups
+        allowed_identities                   = var.auth_settings_v2.active_directory_v2.allowed_identities
+        client_id                            = var.auth_settings_v2.active_directory_v2.client_id
+        client_secret_certificate_thumbprint = var.auth_settings_v2.active_directory_v2.client_secret_certificate_thumbprint
+        client_secret_setting_name           = var.auth_settings_v2.active_directory_v2.client_secret_setting_name
+        jwt_allowed_client_applications      = var.auth_settings_v2.active_directory_v2.jwt_allowed_client_applications
+        jwt_allowed_groups                   = var.auth_settings_v2.active_directory_v2.jwt_allowed_groups
+        login_parameters                     = var.auth_settings_v2.active_directory_v2.login_parameters
+        tenant_auth_endpoint                 = var.auth_settings_v2.active_directory_v2.tenant_auth_endpoint
+        www_authentication_disabled          = var.auth_settings_v2.active_directory_v2.www_authentication_disabled
+      }
+    }
+    dynamic "apple_v2" {
+      for_each = var.auth_settings_v2.apple_v2 != null ? [true] : []
+      content {
+        client_id                  = var.auth_settings_v2.apple_v2.client_id
+        client_secret_setting_name = var.auth_settings_v2.apple_v2.client_secret_setting_name
+      }
+    }
+    dynamic "azure_static_web_app_v2" {
+      for_each = var.auth_settings_v2.azure_static_web_app_v2 != null ? [true] : []
+      content {
+        client_id = var.auth_settings_v2.azure_static_web_app_v2.client_id
+      }
+    }
+    dynamic "custom_oidc_v2" {
+      for_each = var.auth_settings_v2.custom_oidc_v2
+      content {
+        client_id                     = custom_oidc_v2.value.client_id
+        name                          = custom_oidc_v2.value.name
+        name_claim_type               = custom_oidc_v2.value.name_claim_type
+        openid_configuration_endpoint = custom_oidc_v2.value.openid_configuration_endpoint
+        scopes                        = custom_oidc_v2.value.scopes
+      }
+    }
+    dynamic "facebook_v2" {
+      for_each = var.auth_settings_v2.facebook_v2 != null ? [true] : []
+      content {
+        app_id                  = var.auth_settings_v2.facebook_v2.app_id
+        app_secret_setting_name = var.auth_settings_v2.facebook_v2.app_secret_setting_name
+        login_scopes            = var.auth_settings_v2.facebook_v2.login_scopes
+      }
+    }
+    dynamic "github_v2" {
+      for_each = var.auth_settings_v2.github_v2 != null ? [true] : []
+      content {
+        client_id                  = var.auth_settings_v2.github_v2.client_id
+        client_secret_setting_name = var.auth_settings_v2.github_v2.client_secret_setting_name
+        login_scopes               = var.auth_settings_v2.github_v2.login_scopes
+      }
+    }
+    dynamic "google_v2" {
+      for_each = var.auth_settings_v2.google_v2 != null ? [true] : []
+      content {
+        allowed_audiences          = var.auth_settings_v2.google_v2.allowed_audiences
+        client_id                  = var.auth_settings_v2.google_v2.client_id
+        client_secret_setting_name = var.auth_settings_v2.google_v2.client_secret_setting_name
+        login_scopes               = var.auth_settings_v2.google_v2.login_scopes
+      }
+    }
+    login {
+      allowed_external_redirect_urls    = var.auth_settings_v2.login.allowed_external_redirect_urls
+      cookie_expiration_convention      = var.auth_settings_v2.login.cookie_expiration_convention
+      cookie_expiration_time            = var.auth_settings_v2.login.cookie_expiration_time
+      logout_endpoint                   = var.auth_settings_v2.login.logout_endpoint
+      nonce_expiration_time             = var.auth_settings_v2.login.nonce_expiration_time
+      preserve_url_fragments_for_logins = var.auth_settings_v2.login.preserve_url_fragments_for_logins
+      token_refresh_extension_time      = var.auth_settings_v2.login.token_refresh_extension_time
+      token_store_enabled               = var.auth_settings_v2.login.token_store_enabled
+      token_store_path                  = var.auth_settings_v2.login.token_store_path
+      token_store_sas_setting_name      = var.auth_settings_v2.login.token_store_sas_setting_name
+      validate_nonce                    = var.auth_settings_v2.login.validate_nonce
+    }
+    dynamic "microsoft_v2" {
+      for_each = var.auth_settings_v2.microsoft_v2 != null ? [true] : []
+      content {
+        allowed_audiences          = var.auth_settings_v2.microsoft_v2.allowed_audiences
+        client_id                  = var.auth_settings_v2.microsoft_v2.client_id
+        client_secret_setting_name = var.auth_settings_v2.microsoft_v2.client_secret_setting_name
+        login_scopes               = var.auth_settings_v2.microsoft_v2.login_scopes
+      }
+    }
+    dynamic "twitter_v2" {
+      for_each = var.auth_settings_v2.twitter_v2 != null ? [true] : []
+      content {
+        consumer_key                 = var.auth_settings_v2.twitter_v2.consumer_key
+        consumer_secret_setting_name = var.auth_settings_v2.twitter_v2.consumer_secret_setting_name
+      }
+    }
+  }
+  backup {
+    enabled             = var.backup.enabled
+    name                = var.backup.name
+    storage_account_url = var.backup.storage_account_url
+    schedule {
+      frequency_interval       = var.backup.schedule.frequency_interval
+      frequency_unit           = var.backup.schedule.frequency_unit
+      keep_at_least_one_backup = var.backup.schedule.keep_at_least_one_backup
+      retention_period_days    = var.backup.schedule.retention_period_days
+    }
+  }
+  dynamic "connection_string" {
+    for_each = var.connection_string
+    content {
+      name  = connection_string.value.name
+      type  = connection_string.value.type
+      value = connection_string.value.value
+    }
+  }
+  identity {
+    identity_ids = var.identity.identity_ids
+    type         = var.identity.type
+  }
+  logs {
+    detailed_error_messages = var.logs.detailed_error_messages
+    failed_request_tracing  = var.logs.failed_request_tracing
+    dynamic "application_logs" {
+      for_each = var.logs.application_logs != null ? [true] : []
+      content {
+        file_system_level = var.logs.application_logs.file_system_level
+        dynamic "azure_blob_storage" {
+          for_each = var.logs.application_logs.azure_blob_storage != null ? [true] : []
+          content {
+            level             = var.logs.application_logs.azure_blob_storage.level
+            retention_in_days = var.logs.application_logs.azure_blob_storage.retention_in_days
+            sas_url           = var.logs.application_logs.azure_blob_storage.sas_url
+          }
+        }
+      }
+    }
+    dynamic "http_logs" {
+      for_each = var.logs.http_logs != null ? [true] : []
+      content {
+        dynamic "azure_blob_storage" {
+          for_each = var.logs.http_logs.azure_blob_storage != null ? [true] : []
+          content {
+            retention_in_days = var.logs.http_logs.azure_blob_storage.retention_in_days
+            sas_url           = var.logs.http_logs.azure_blob_storage.sas_url
+          }
+        }
+        dynamic "file_system" {
+          for_each = var.logs.http_logs.file_system != null ? [true] : []
+          content {
+            retention_in_days = var.logs.http_logs.file_system.retention_in_days
+            retention_in_mb   = var.logs.http_logs.file_system.retention_in_mb
+          }
+        }
+      }
+    }
+  }
+  site_config {
+    always_on                                     = var.site_config.always_on
+    api_definition_url                            = var.site_config.api_definition_url
+    api_management_api_id                         = var.site_config.api_management_api_id
+    app_command_line                              = var.site_config.app_command_line
+    container_registry_managed_identity_client_id = var.site_config.container_registry_managed_identity_client_id
+    container_registry_use_managed_identity       = var.site_config.container_registry_use_managed_identity
+    ftps_state                                    = var.site_config.ftps_state
+    health_check_eviction_time_in_min             = var.site_config.health_check_eviction_time_in_min
+    health_check_path                             = var.site_config.health_check_path
+    http2_enabled                                 = var.site_config.http2_enabled
+    ip_restriction_default_action                 = var.site_config.ip_restriction_default_action
+    load_balancing_mode                           = var.site_config.load_balancing_mode
+    local_mysql_enabled                           = var.site_config.local_mysql_enabled
+    managed_pipeline_mode                         = var.site_config.managed_pipeline_mode
+    minimum_tls_version                           = var.site_config.minimum_tls_version
+    remote_debugging_enabled                      = var.site_config.remote_debugging_enabled
+    scm_ip_restriction_default_action             = var.site_config.scm_ip_restriction_default_action
+    scm_minimum_tls_version                       = var.site_config.scm_minimum_tls_version
+    scm_use_main_ip_restriction                   = var.site_config.scm_use_main_ip_restriction
+    use_32_bit_worker                             = var.site_config.use_32_bit_worker
+    vnet_route_all_enabled                        = var.site_config.vnet_route_all_enabled
+    websockets_enabled                            = var.site_config.websockets_enabled
+    dynamic "application_stack" {
+      for_each = var.site_config.application_stack != null ? [true] : []
+      content {
+        docker_image_name        = var.site_config.application_stack.docker_image_name
+        docker_registry_password = var.site_config.application_stack.docker_registry_password
+        docker_registry_url      = var.site_config.application_stack.docker_registry_url
+        docker_registry_username = var.site_config.application_stack.docker_registry_username
+        dotnet_version           = var.site_config.application_stack.dotnet_version
+        go_version               = var.site_config.application_stack.go_version
+        java_server              = var.site_config.application_stack.java_server
+        java_server_version      = var.site_config.application_stack.java_server_version
+        java_version             = var.site_config.application_stack.java_version
+        node_version             = var.site_config.application_stack.node_version
+        php_version              = var.site_config.application_stack.php_version
+        python_version           = var.site_config.application_stack.python_version
+        ruby_version             = var.site_config.application_stack.ruby_version
+      }
+    }
+    dynamic "auto_heal_setting" {
+      for_each = var.site_config.auto_heal_setting != null ? [true] : []
+      content {
+        dynamic "action" {
+          for_each = var.site_config.auto_heal_setting.action != null ? [true] : []
+          content {
+            action_type = var.site_config.auto_heal_setting.action.action_type
+          }
+        }
+        dynamic "trigger" {
+          for_each = var.site_config.auto_heal_setting.trigger != null ? [true] : []
+          content {
+            dynamic "requests" {
+              for_each = var.site_config.auto_heal_setting.trigger.requests != null ? [true] : []
+              content {
+                count    = var.site_config.auto_heal_setting.trigger.requests.count
+                interval = var.site_config.auto_heal_setting.trigger.requests.interval
+              }
+            }
+            dynamic "slow_request" {
+              for_each = var.site_config.auto_heal_setting.trigger.slow_request != null ? [true] : []
+              content {
+                count      = var.site_config.auto_heal_setting.trigger.slow_request.count
+                interval   = var.site_config.auto_heal_setting.trigger.slow_request.interval
+                time_taken = var.site_config.auto_heal_setting.trigger.slow_request.time_taken
+              }
+            }
+            dynamic "slow_request_with_path" {
+              for_each = var.site_config.auto_heal_setting.trigger.slow_request_with_path
+              content {
+                count      = slow_request_with_path.value.count
+                interval   = slow_request_with_path.value.interval
+                path       = slow_request_with_path.value.path
+                time_taken = slow_request_with_path.value.time_taken
+              }
+            }
+            dynamic "status_code" {
+              for_each = var.site_config.auto_heal_setting.trigger.status_code
+              content {
+                count             = status_code.value.count
+                interval          = status_code.value.interval
+                path              = status_code.value.path
+                status_code_range = status_code.value.status_code_range
+                sub_status        = status_code.value.sub_status
+                win32_status_code = status_code.value.win32_status_code
+              }
+            }
+          }
+        }
+      }
+    }
+    dynamic "cors" {
+      for_each = var.site_config.cors != null ? [true] : []
+      content {
+        allowed_origins     = var.site_config.cors.allowed_origins
+        support_credentials = var.site_config.cors.support_credentials
+      }
+    }
+    dynamic "ip_restriction" {
+      for_each = var.site_config.ip_restriction
+      content {
+        action                    = ip_restriction.value.action
+        description               = ip_restriction.value.description
+        headers                   = ip_restriction.value.headers
+        ip_address                = ip_restriction.value.ip_address
+        priority                  = ip_restriction.value.priority
+        service_tag               = ip_restriction.value.service_tag
+        virtual_network_subnet_id = ip_restriction.value.virtual_network_subnet_id
+      }
+    }
+    dynamic "scm_ip_restriction" {
+      for_each = var.site_config.scm_ip_restriction
+      content {
+        action                    = scm_ip_restriction.value.action
+        description               = scm_ip_restriction.value.description
+        headers                   = scm_ip_restriction.value.headers
+        ip_address                = scm_ip_restriction.value.ip_address
+        priority                  = scm_ip_restriction.value.priority
+        service_tag               = scm_ip_restriction.value.service_tag
+        virtual_network_subnet_id = scm_ip_restriction.value.virtual_network_subnet_id
+      }
+    }
+  }
+  sticky_settings {
+    app_setting_names       = var.sticky_settings.app_setting_names
+    connection_string_names = var.sticky_settings.connection_string_names
+  }
+  dynamic "storage_account" {
+    for_each = var.storage_account
+    content {
+      access_key   = storage_account.value.access_key
+      account_name = storage_account.value.account_name
+      mount_path   = storage_account.value.mount_path
+      name         = storage_account.value.name
+      share_name   = storage_account.value.share_name
+      type         = storage_account.value.type
+    }
+  }
+  timeouts {
+    create = var.timeouts.create
+    delete = var.timeouts.delete
+    read   = var.timeouts.read
+    update = var.timeouts.update
+  }
+}

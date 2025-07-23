@@ -1,0 +1,434 @@
+variable "app_settings" {
+  type     = map(string)
+  default  = null
+  nullable = true
+}
+
+variable "client_affinity_enabled" {
+  type     = bool
+  default  = null
+  nullable = true
+}
+
+variable "client_certificate_enabled" {
+  type     = bool
+  default  = null
+  nullable = true
+}
+
+variable "client_certificate_exclusion_paths" {
+  type        = string
+  default     = null
+  nullable    = true
+  description = <<DESCRIPTION
+Paths to exclude when using client certificates, separated by ;
+DESCRIPTION
+}
+
+variable "client_certificate_mode" {
+  type     = string
+  default  = null
+  nullable = true
+}
+
+variable "enabled" {
+  type     = bool
+  default  = null
+  nullable = true
+}
+
+variable "ftp_publish_basic_authentication_enabled" {
+  type     = bool
+  default  = null
+  nullable = true
+}
+
+variable "https_only" {
+  type     = bool
+  default  = null
+  nullable = true
+}
+
+variable "location" {
+  type = string
+}
+
+variable "name" {
+  type = string
+}
+
+variable "public_network_access_enabled" {
+  type     = bool
+  default  = null
+  nullable = true
+}
+
+variable "resource_group_name" {
+  type = string
+}
+
+variable "service_plan_id" {
+  type = string
+}
+
+variable "tags" {
+  type     = map(string)
+  default  = null
+  nullable = true
+}
+
+variable "virtual_network_backup_restore_enabled" {
+  type     = bool
+  default  = null
+  nullable = true
+}
+
+variable "virtual_network_subnet_id" {
+  type     = string
+  default  = null
+  nullable = true
+}
+
+variable "vnet_image_pull_enabled" {
+  type     = bool
+  default  = null
+  nullable = true
+}
+
+variable "webdeploy_publish_basic_authentication_enabled" {
+  type     = bool
+  default  = null
+  nullable = true
+}
+
+variable "auth_settings" {
+  type = object({
+    additional_login_parameters   = map(string),
+    enabled                       = bool,
+    issuer                        = optional(string),
+    token_refresh_extension_hours = optional(number),
+    token_store_enabled           = optional(bool),
+    active_directory = object({
+      allowed_audiences          = list(string),
+      client_id                  = string,
+      client_secret              = optional(string),
+      client_secret_setting_name = optional(string)
+    }),
+    facebook = object({
+      app_id                  = string,
+      app_secret              = optional(string),
+      app_secret_setting_name = optional(string),
+      oauth_scopes            = list(string)
+    }),
+    github = object({
+      client_id                  = string,
+      client_secret              = optional(string),
+      client_secret_setting_name = optional(string),
+      oauth_scopes               = list(string)
+    }),
+    google = object({
+      client_id                  = string,
+      client_secret              = optional(string),
+      client_secret_setting_name = optional(string),
+      oauth_scopes               = list(string)
+    }),
+    microsoft = object({
+      client_id                  = string,
+      client_secret              = optional(string),
+      client_secret_setting_name = optional(string),
+      oauth_scopes               = list(string)
+    }),
+    twitter = object({
+      consumer_key                 = string,
+      consumer_secret              = optional(string),
+      consumer_secret_setting_name = optional(string)
+    })
+  })
+  default  = null
+  nullable = true
+}
+
+variable "auth_settings_v2" {
+  type = object({
+    auth_enabled                            = optional(bool),
+    config_file_path                        = optional(string),
+    default_provider                        = optional(string),
+    excluded_paths                          = list(string),
+    forward_proxy_convention                = optional(string),
+    forward_proxy_custom_host_header_name   = optional(string),
+    forward_proxy_custom_scheme_header_name = optional(string),
+    http_route_api_prefix                   = optional(string),
+    require_authentication                  = optional(bool),
+    require_https                           = optional(bool),
+    runtime_version                         = optional(string),
+    unauthenticated_action                  = optional(string),
+    active_directory_v2 = object({
+      allowed_applications                 = list(string),
+      allowed_audiences                    = list(string),
+      allowed_groups                       = list(string),
+      allowed_identities                   = list(string),
+      client_id                            = string,
+      client_secret_certificate_thumbprint = optional(string),
+      client_secret_setting_name           = optional(string),
+      jwt_allowed_client_applications      = list(string),
+      jwt_allowed_groups                   = list(string),
+      login_parameters                     = map(string),
+      tenant_auth_endpoint                 = string,
+      www_authentication_disabled          = optional(bool)
+    }),
+    apple_v2 = object({
+      client_id                  = string,
+      client_secret_setting_name = string
+    }),
+    azure_static_web_app_v2 = object({
+      client_id = string
+    }),
+    custom_oidc_v2 = list(object({
+      client_id                     = string,
+      name                          = string,
+      name_claim_type               = optional(string),
+      openid_configuration_endpoint = string,
+      scopes                        = list(string)
+    })),
+    facebook_v2 = object({
+      app_id                  = string,
+      app_secret_setting_name = string,
+      login_scopes            = list(string)
+    }),
+    github_v2 = object({
+      client_id                  = string,
+      client_secret_setting_name = string,
+      login_scopes               = list(string)
+    }),
+    google_v2 = object({
+      allowed_audiences          = list(string),
+      client_id                  = string,
+      client_secret_setting_name = string,
+      login_scopes               = list(string)
+    }),
+    login = object({
+      allowed_external_redirect_urls    = list(string),
+      cookie_expiration_convention      = optional(string),
+      cookie_expiration_time            = optional(string),
+      logout_endpoint                   = optional(string),
+      nonce_expiration_time             = optional(string),
+      preserve_url_fragments_for_logins = optional(bool),
+      token_refresh_extension_time      = optional(number),
+      token_store_enabled               = optional(bool),
+      token_store_path                  = optional(string),
+      token_store_sas_setting_name      = optional(string),
+      validate_nonce                    = optional(bool)
+    }),
+    microsoft_v2 = object({
+      allowed_audiences          = list(string),
+      client_id                  = string,
+      client_secret_setting_name = string,
+      login_scopes               = list(string)
+    }),
+    twitter_v2 = object({
+      consumer_key                 = string,
+      consumer_secret_setting_name = string
+    })
+  })
+  default  = null
+  nullable = true
+}
+
+variable "backup" {
+  type = object({
+    enabled             = optional(bool),
+    name                = string,
+    storage_account_url = string,
+    schedule = object({
+      frequency_interval       = number,
+      frequency_unit           = string,
+      keep_at_least_one_backup = optional(bool),
+      retention_period_days    = optional(number)
+    })
+  })
+  default  = null
+  nullable = true
+}
+
+variable "connection_string" {
+  type = set(object({
+    name  = string,
+    type  = string,
+    value = string
+  }))
+  default  = null
+  nullable = true
+}
+
+variable "identity" {
+  type = object({
+    identity_ids = set(string),
+    type         = string
+  })
+  default  = null
+  nullable = true
+}
+
+variable "logs" {
+  type = object({
+    detailed_error_messages = optional(bool),
+    failed_request_tracing  = optional(bool),
+    application_logs = object({
+      file_system_level = string,
+      azure_blob_storage = object({
+        level             = string,
+        retention_in_days = number,
+        sas_url           = string
+      })
+    }),
+    http_logs = object({
+      azure_blob_storage = object({
+        retention_in_days = optional(number),
+        sas_url           = string
+      }),
+      file_system = object({
+        retention_in_days = number,
+        retention_in_mb   = number
+      })
+    })
+  })
+  default  = null
+  nullable = true
+}
+
+variable "site_config" {
+  type = object({
+    always_on                                     = optional(bool),
+    api_definition_url                            = optional(string),
+    api_management_api_id                         = optional(string),
+    app_command_line                              = optional(string),
+    container_registry_managed_identity_client_id = optional(string),
+    container_registry_use_managed_identity       = optional(bool),
+    ftps_state                                    = optional(string),
+    health_check_eviction_time_in_min             = optional(number),
+    health_check_path                             = optional(string),
+    http2_enabled                                 = optional(bool),
+    ip_restriction_default_action                 = optional(string),
+    load_balancing_mode                           = optional(string),
+    local_mysql_enabled                           = optional(bool),
+    managed_pipeline_mode                         = optional(string),
+    minimum_tls_version                           = optional(string),
+    remote_debugging_enabled                      = optional(bool),
+    scm_ip_restriction_default_action             = optional(string),
+    scm_minimum_tls_version                       = optional(string),
+    scm_use_main_ip_restriction                   = optional(bool),
+    use_32_bit_worker                             = optional(bool),
+    vnet_route_all_enabled                        = optional(bool),
+    websockets_enabled                            = optional(bool),
+    application_stack = object({
+      docker_image_name        = optional(string),
+      docker_registry_password = optional(string),
+      docker_registry_url      = optional(string),
+      docker_registry_username = optional(string),
+      dotnet_version           = optional(string),
+      go_version               = optional(string),
+      java_server              = optional(string),
+      java_server_version      = optional(string),
+      java_version             = optional(string),
+      node_version             = optional(string),
+      php_version              = optional(string),
+      python_version           = optional(string),
+      ruby_version             = optional(string)
+    }),
+    auto_heal_setting = object({
+      action = object({
+        action_type = string
+      }),
+      trigger = object({
+        requests = object({
+          count    = number,
+          interval = string
+        }),
+        slow_request = object({
+          count      = number,
+          interval   = string,
+          time_taken = string
+        }),
+        slow_request_with_path = list(object({
+          count      = number,
+          interval   = string,
+          path       = optional(string),
+          time_taken = string
+        })),
+        status_code = set(object({
+          count             = number,
+          interval          = string,
+          path              = optional(string),
+          status_code_range = string,
+          sub_status        = optional(number),
+          win32_status_code = optional(number)
+        }))
+      })
+    }),
+    cors = object({
+      allowed_origins     = set(string),
+      support_credentials = optional(bool)
+    }),
+    ip_restriction = list(object({
+      action      = optional(string),
+      description = optional(string),
+      headers = list(object({
+        x_azure_fdid      = list(string),
+        x_fd_health_probe = list(string),
+        x_forwarded_for   = list(string),
+        x_forwarded_host  = list(string)
+      })),
+      ip_address                = optional(string),
+      priority                  = optional(number),
+      service_tag               = optional(string),
+      virtual_network_subnet_id = optional(string)
+    })),
+    scm_ip_restriction = list(object({
+      action      = optional(string),
+      description = optional(string),
+      headers = list(object({
+        x_azure_fdid      = list(string),
+        x_fd_health_probe = list(string),
+        x_forwarded_for   = list(string),
+        x_forwarded_host  = list(string)
+      })),
+      ip_address                = optional(string),
+      priority                  = optional(number),
+      service_tag               = optional(string),
+      virtual_network_subnet_id = optional(string)
+    }))
+  })
+}
+
+variable "sticky_settings" {
+  type = object({
+    app_setting_names       = list(string),
+    connection_string_names = list(string)
+  })
+  default  = null
+  nullable = true
+}
+
+variable "storage_account" {
+  type = set(object({
+    access_key   = string,
+    account_name = string,
+    mount_path   = optional(string),
+    name         = string,
+    share_name   = string,
+    type         = string
+  }))
+  default  = null
+  nullable = true
+}
+
+variable "timeouts" {
+  type = object({
+    create = optional(string),
+    delete = optional(string),
+    read   = optional(string),
+    update = optional(string)
+  })
+  default  = null
+  nullable = true
+}
