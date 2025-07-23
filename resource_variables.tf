@@ -103,46 +103,46 @@ variable "webdeploy_publish_basic_authentication_enabled" {
 
 variable "auth_settings" {
   type = object({
-    additional_login_parameters   = map(string),
+    additional_login_parameters   = optional(map(string)),
     enabled                       = bool,
     issuer                        = optional(string),
     token_refresh_extension_hours = optional(number),
     token_store_enabled           = optional(bool),
-    active_directory = object({
-      allowed_audiences          = list(string),
+    active_directory = optional(object({
+      allowed_audiences          = optional(list(string)),
       client_id                  = string,
       client_secret              = optional(string),
       client_secret_setting_name = optional(string)
-    }),
-    facebook = object({
+    })),
+    facebook = optional(object({
       app_id                  = string,
       app_secret              = optional(string),
       app_secret_setting_name = optional(string),
-      oauth_scopes            = list(string)
-    }),
-    github = object({
+      oauth_scopes            = optional(list(string))
+    })),
+    github = optional(object({
       client_id                  = string,
       client_secret              = optional(string),
       client_secret_setting_name = optional(string),
-      oauth_scopes               = list(string)
-    }),
-    google = object({
+      oauth_scopes               = optional(list(string))
+    })),
+    google = optional(object({
       client_id                  = string,
       client_secret              = optional(string),
       client_secret_setting_name = optional(string),
-      oauth_scopes               = list(string)
-    }),
-    microsoft = object({
+      oauth_scopes               = optional(list(string))
+    })),
+    microsoft = optional(object({
       client_id                  = string,
       client_secret              = optional(string),
       client_secret_setting_name = optional(string),
-      oauth_scopes               = list(string)
-    }),
-    twitter = object({
+      oauth_scopes               = optional(list(string))
+    })),
+    twitter = optional(object({
       consumer_key                 = string,
       consumer_secret              = optional(string),
       consumer_secret_setting_name = optional(string)
-    })
+    }))
   })
   default  = null
   nullable = true
@@ -153,7 +153,7 @@ variable "auth_settings_v2" {
     auth_enabled                            = optional(bool),
     config_file_path                        = optional(string),
     default_provider                        = optional(string),
-    excluded_paths                          = list(string),
+    excluded_paths                          = optional(list(string)),
     forward_proxy_convention                = optional(string),
     forward_proxy_custom_host_header_name   = optional(string),
     forward_proxy_custom_scheme_header_name = optional(string),
@@ -162,52 +162,52 @@ variable "auth_settings_v2" {
     require_https                           = optional(bool),
     runtime_version                         = optional(string),
     unauthenticated_action                  = optional(string),
-    active_directory_v2 = object({
-      allowed_applications                 = list(string),
-      allowed_audiences                    = list(string),
-      allowed_groups                       = list(string),
-      allowed_identities                   = list(string),
+    active_directory_v2 = optional(object({
+      allowed_applications                 = optional(list(string)),
+      allowed_audiences                    = optional(list(string)),
+      allowed_groups                       = optional(list(string)),
+      allowed_identities                   = optional(list(string)),
       client_id                            = string,
       client_secret_certificate_thumbprint = optional(string),
       client_secret_setting_name           = optional(string),
-      jwt_allowed_client_applications      = list(string),
-      jwt_allowed_groups                   = list(string),
-      login_parameters                     = map(string),
+      jwt_allowed_client_applications      = optional(list(string)),
+      jwt_allowed_groups                   = optional(list(string)),
+      login_parameters                     = optional(map(string)),
       tenant_auth_endpoint                 = string,
       www_authentication_disabled          = optional(bool)
-    }),
-    apple_v2 = object({
+    })),
+    apple_v2 = optional(object({
       client_id                  = string,
       client_secret_setting_name = string
-    }),
-    azure_static_web_app_v2 = object({
+    })),
+    azure_static_web_app_v2 = optional(object({
       client_id = string
-    }),
-    custom_oidc_v2 = list(object({
+    })),
+    custom_oidc_v2 = optional(list(object({
       client_id                     = string,
       name                          = string,
       name_claim_type               = optional(string),
       openid_configuration_endpoint = string,
-      scopes                        = list(string)
-    })),
-    facebook_v2 = object({
+      scopes                        = optional(list(string))
+    }))),
+    facebook_v2 = optional(object({
       app_id                  = string,
       app_secret_setting_name = string,
-      login_scopes            = list(string)
-    }),
-    github_v2 = object({
+      login_scopes            = optional(list(string))
+    })),
+    github_v2 = optional(object({
       client_id                  = string,
       client_secret_setting_name = string,
-      login_scopes               = list(string)
-    }),
-    google_v2 = object({
-      allowed_audiences          = list(string),
+      login_scopes               = optional(list(string))
+    })),
+    google_v2 = optional(object({
+      allowed_audiences          = optional(list(string)),
       client_id                  = string,
       client_secret_setting_name = string,
-      login_scopes               = list(string)
-    }),
+      login_scopes               = optional(list(string))
+    })),
     login = object({
-      allowed_external_redirect_urls    = list(string),
+      allowed_external_redirect_urls    = optional(list(string)),
       cookie_expiration_convention      = optional(string),
       cookie_expiration_time            = optional(string),
       logout_endpoint                   = optional(string),
@@ -219,16 +219,16 @@ variable "auth_settings_v2" {
       token_store_sas_setting_name      = optional(string),
       validate_nonce                    = optional(bool)
     }),
-    microsoft_v2 = object({
-      allowed_audiences          = list(string),
+    microsoft_v2 = optional(object({
+      allowed_audiences          = optional(list(string)),
       client_id                  = string,
       client_secret_setting_name = string,
-      login_scopes               = list(string)
-    }),
-    twitter_v2 = object({
+      login_scopes               = optional(list(string))
+    })),
+    twitter_v2 = optional(object({
       consumer_key                 = string,
       consumer_secret_setting_name = string
-    })
+    }))
   })
   default  = null
   nullable = true
@@ -262,7 +262,7 @@ variable "connection_string" {
 
 variable "identity" {
   type = object({
-    identity_ids = set(string),
+    identity_ids = optional(set(string)),
     type         = string
   })
   default  = null
@@ -273,24 +273,24 @@ variable "logs" {
   type = object({
     detailed_error_messages = optional(bool),
     failed_request_tracing  = optional(bool),
-    application_logs = object({
+    application_logs = optional(object({
       file_system_level = string,
-      azure_blob_storage = object({
+      azure_blob_storage = optional(object({
         level             = string,
         retention_in_days = number,
         sas_url           = string
-      })
-    }),
-    http_logs = object({
-      azure_blob_storage = object({
+      }))
+    })),
+    http_logs = optional(object({
+      azure_blob_storage = optional(object({
         retention_in_days = optional(number),
         sas_url           = string
-      }),
-      file_system = object({
+      })),
+      file_system = optional(object({
         retention_in_days = number,
         retention_in_mb   = number
-      })
-    })
+      }))
+    }))
   })
   default  = null
   nullable = true
@@ -320,7 +320,7 @@ variable "site_config" {
     use_32_bit_worker                             = optional(bool),
     vnet_route_all_enabled                        = optional(bool),
     websockets_enabled                            = optional(bool),
-    application_stack = object({
+    application_stack = optional(object({
       docker_image_name        = optional(string),
       docker_registry_password = optional(string),
       docker_registry_url      = optional(string),
@@ -334,76 +334,76 @@ variable "site_config" {
       php_version              = optional(string),
       python_version           = optional(string),
       ruby_version             = optional(string)
-    }),
-    auto_heal_setting = object({
-      action = object({
+    })),
+    auto_heal_setting = optional(object({
+      action = optional(object({
         action_type = string
-      }),
-      trigger = object({
-        requests = object({
+      })),
+      trigger = optional(object({
+        requests = optional(object({
           count    = number,
           interval = string
-        }),
-        slow_request = object({
+        })),
+        slow_request = optional(object({
           count      = number,
           interval   = string,
           time_taken = string
-        }),
-        slow_request_with_path = list(object({
+        })),
+        slow_request_with_path = optional(list(object({
           count      = number,
           interval   = string,
           path       = optional(string),
           time_taken = string
-        })),
-        status_code = set(object({
+        }))),
+        status_code = optional(set(object({
           count             = number,
           interval          = string,
           path              = optional(string),
           status_code_range = string,
           sub_status        = optional(number),
           win32_status_code = optional(number)
-        }))
-      })
-    }),
-    cors = object({
-      allowed_origins     = set(string),
-      support_credentials = optional(bool)
-    }),
-    ip_restriction = list(object({
-      action      = optional(string),
-      description = optional(string),
-      headers = list(object({
-        x_azure_fdid      = list(string),
-        x_fd_health_probe = list(string),
-        x_forwarded_for   = list(string),
-        x_forwarded_host  = list(string)
-      })),
-      ip_address                = optional(string),
-      priority                  = optional(number),
-      service_tag               = optional(string),
-      virtual_network_subnet_id = optional(string)
+        })))
+      }))
     })),
-    scm_ip_restriction = list(object({
+    cors = optional(object({
+      allowed_origins     = optional(set(string)),
+      support_credentials = optional(bool)
+    })),
+    ip_restriction = optional(list(object({
       action      = optional(string),
       description = optional(string),
-      headers = list(object({
+      headers = optional(list(object({
         x_azure_fdid      = list(string),
         x_fd_health_probe = list(string),
         x_forwarded_for   = list(string),
         x_forwarded_host  = list(string)
-      })),
+      }))),
       ip_address                = optional(string),
       priority                  = optional(number),
       service_tag               = optional(string),
       virtual_network_subnet_id = optional(string)
-    }))
+    }))),
+    scm_ip_restriction = optional(list(object({
+      action      = optional(string),
+      description = optional(string),
+      headers = optional(list(object({
+        x_azure_fdid      = list(string),
+        x_fd_health_probe = list(string),
+        x_forwarded_for   = list(string),
+        x_forwarded_host  = list(string)
+      }))),
+      ip_address                = optional(string),
+      priority                  = optional(number),
+      service_tag               = optional(string),
+      virtual_network_subnet_id = optional(string)
+    })))
   })
 }
 
 variable "sticky_settings" {
   type = object({
-    app_setting_names       = list(string),
-    connection_string_names = list(string)
+    app_setting_names       = optional(list(string)),
+    connection_string_names = optional(list(string))
   })
   default  = null
   nullable = true
