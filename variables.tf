@@ -46,9 +46,9 @@ variable "datadog_version" {
 
 variable "container_config" {
   type = object({
-    port      = optional(string, "8080")
-    is_dotnet = optional(bool, false)
-    is_musl   = optional(bool, false)
+    port      = string
+    is_dotnet = optional(bool)
+    is_musl   = optional(bool)
   })
   description = "Additional Configuration for containerized applications. This is required if the application is a container."
   default     = null

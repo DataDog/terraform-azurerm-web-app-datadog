@@ -1,14 +1,70 @@
+
+locals {
+  is_container        = var.site_config.application_stack.docker_image_name != null
+  is_dotnet_container = coalesce(try(var.container_config.is_dotnet), false)
+  is_musl_container   = coalesce(try(var.container_config.is_musl), false)
+}
+
 check "valid_musl" {
   assert {
-    condition = !(try(var.container_config.is_musl, false) && !try(var.container_config.is_dotnet, false))
-
-    error_message = "The 'is_musl' variable can only be set to true if 'is_dotnet_container' is also true."
+    condition     = !(local.is_musl_container && !local.is_dotnet_container)
+    error_message = "The 'is_musl' variable can only be set to true if 'is_dotnet' is also true."
   }
 }
 
+
+check "container_has_config" {
+  assert {
+    condition     = !(local.is_container && var.container_config == null)
+    error_message = "The 'container_config' variable must be set if the application is a container."
+  }
+}
+
+
+# Sidecar Logic/Installation
+locals {
+  sidecar_container_name = "datadog-sidecar"
+  sidecar_image          = "index.docker.io/datadog/serverless-init:latest"
+  sidecar_port           = "8126"
+}
+
+# Convert to Sitecontainers if the customer is using a containerized app
+# workaround: https://github.com/hashicorp/terraform-provider-azurerm/issues/25167#issuecomment-2586756232
+resource "azapi_update_resource" "enable_sidecar" {
+  count       = local.is_container ? 1 : 0 # only run if the app is containerized
+  type        = "Microsoft.Web/sites@2022-03-01"
+  resource_id = azurerm_linux_web_app.this.id
+  body        = { properties = { siteConfig = { linuxFxVersion = "SITECONTAINERS" } } }
+  lifecycle { replace_triggered_by = [azurerm_linux_web_app.this] }
+}
+
+locals {
+  main_container_host  = trimprefix(trimprefix(var.site_config.application_stack.docker_registry_url, "https://"), "http://")
+  main_container_image = "${local.main_container_host}/${var.site_config.application_stack.docker_image_name}"
+}
+resource "azapi_resource" "main_container" {
+  count      = local.is_container ? 1 : 0 # only run if the app is containerized
+  depends_on = [azapi_update_resource.enable_sidecar]
+  type       = "Microsoft.Web/sites/sitecontainers@2024-11-01"
+  parent_id  = azurerm_linux_web_app.this.id
+  name       = "main"
+  # https://learn.microsoft.com/en-us/rest/api/appservice/web-apps/create-or-update-site-container?view=rest-appservice-2024-11-01#request-body
+  body = {
+    properties = {
+      image          = local.main_container_image
+      isMain         = true
+      authType       = var.site_config.application_stack.docker_registry_username != null ? "UserCredentials" : "Anonymous"
+      userName       = var.site_config.application_stack.docker_registry_username
+      passwordSecret = var.site_config.application_stack.docker_registry_password
+      targetPort     = try(var.container_config.port, "8080")
+    }
+  }
+}
+
+
 # Resource Implementation Locals
 locals {
-  is_dotnet = try(var.container_config.is_dotnet, false) || var.site_config.application_stack.dotnet_version != null
+  is_dotnet = local.is_dotnet_container || var.site_config.application_stack.dotnet_version != null
 
   app_settings = merge(
     {
@@ -40,52 +96,6 @@ locals {
     var.tags
   )
 }
-
-# Sidecar Logic/Installation
-locals {
-  is_container           = var.site_config.application_stack.docker_image_name != null
-  sidecar_container_name = "datadog-sidecar"
-  sidecar_image          = "index.docker.io/datadog/serverless-init:latest"
-  sidecar_port           = "8126"
-}
-
-
-# Convert to Sitecontainers if the customer is using a containerized app
-# workaround: https://github.com/hashicorp/terraform-provider-azurerm/issues/25167#issuecomment-2586756232
-resource "azapi_update_resource" "enable_sidecar" {
-  count       = local.is_container ? 1 : 0
-  type        = "Microsoft.Web/sites@2022-03-01"
-  resource_id = azurerm_linux_web_app.this.id
-  body        = { properties = { siteConfig = { linuxFxVersion = "SITECONTAINERS" } } }
-  lifecycle { replace_triggered_by = [azurerm_linux_web_app.this] }
-}
-
-
-locals {
-  main_container_host  = trimprefix(trimprefix(var.site_config.application_stack.docker_registry_url, "https://"), "http://")
-  main_container_image = "${local.main_container_host}/${var.site_config.application_stack.docker_image_name}"
-}
-resource "azapi_resource" "main_container" {
-  count      = local.is_container ? 1 : 0
-  depends_on = [azapi_update_resource.enable_sidecar]
-  type       = "Microsoft.Web/sites/sitecontainers@2024-11-01"
-  parent_id  = azurerm_linux_web_app.this.id
-  name       = "main"
-  # https://learn.microsoft.com/en-us/rest/api/appservice/web-apps/create-or-update-site-container?view=rest-appservice-2024-11-01#request-body
-  body = {
-    properties = {
-      image          = local.main_container_image
-      isMain         = true
-      authType       = var.site_config.application_stack.docker_registry_username != null ? "UserCredentials" : "Anonymous"
-      userName       = var.site_config.application_stack.docker_registry_username
-      passwordSecret = var.site_config.application_stack.docker_registry_password
-      targetPort     = try(var.container_config.port, "8080")
-    }
-  }
-}
-
-
-
 
 resource "azapi_resource" "datadog_sidecar" {
   type      = "Microsoft.Web/sites/sitecontainers@2024-11-01"
