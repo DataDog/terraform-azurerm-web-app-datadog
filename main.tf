@@ -1,15 +1,8 @@
 
 locals {
   is_container        = var.site_config.application_stack.docker_image_name != null
-  is_dotnet_container = coalesce(try(var.container_config.is_dotnet), false)
-  is_musl_container   = coalesce(try(var.container_config.is_musl), false)
-}
-
-check "valid_musl" {
-  assert {
-    condition     = !(local.is_musl_container && !local.is_dotnet_container)
-    error_message = "The 'is_musl' variable can only be set to true if 'is_dotnet' is also true."
-  }
+  is_dotnet_container = coalesce(try(var.container_config.is_dotnet, null), false)
+  is_musl_container   = coalesce(try(var.container_config.is_musl, null), false)
 }
 
 
