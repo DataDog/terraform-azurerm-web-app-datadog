@@ -8,8 +8,6 @@
             "tags"
         ],
         "always_allow": [
-            "current_stack",
-            "dotnet_version",
             "key_vault_reference_identity_id",
             "zip_deploy_file"
         ],
