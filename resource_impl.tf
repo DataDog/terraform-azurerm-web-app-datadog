@@ -15,7 +15,7 @@ resource "azurerm_linux_web_app" "this" {
   public_network_access_enabled                  = var.public_network_access_enabled
   resource_group_name                            = var.resource_group_name
   service_plan_id                                = var.service_plan_id
-  tags                                           = var.tags
+  tags                                           = local.tags
   virtual_network_backup_restore_enabled         = var.virtual_network_backup_restore_enabled
   virtual_network_subnet_id                      = var.virtual_network_subnet_id
   vnet_image_pull_enabled                        = var.vnet_image_pull_enabled

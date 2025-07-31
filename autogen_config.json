@@ -4,13 +4,19 @@
     "resource": "azurerm_linux_web_app",
     "fields": {
         "impl": [
-            "app_settings"
+            "app_settings",
+            "tags"
         ],
         "always_allow": [
+            "current_stack",
+            "dotnet_version",
             "key_vault_reference_identity_id",
             "zip_deploy_file"
         ],
-        "never_allow": []
+        "always_sensitive": [
+            "app_settings",
+            "site_config"
+        ]
     },
     "additional_providers": [
         {
