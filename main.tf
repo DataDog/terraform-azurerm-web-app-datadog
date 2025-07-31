@@ -1,0 +1,5 @@
+
+
+locals {
+  app_settings = {}
+}
