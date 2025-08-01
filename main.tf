@@ -1,8 +1,8 @@
 
 locals {
   is_container        = var.site_config.application_stack.docker_image_name != null
-  is_dotnet_container = coalesce(try(var.container_config.is_dotnet, null), false)
-  is_musl_container   = coalesce(try(var.container_config.is_musl, null), false)
+  is_dotnet_container = try(var.container_config.is_dotnet, false)
+  is_musl_container   = try(var.container_config.is_musl, false)
 }
 
 
@@ -32,8 +32,8 @@ resource "azapi_update_resource" "enable_sidecar" {
 }
 
 locals {
-  main_container_host  = trimprefix(trimprefix(var.site_config.application_stack.docker_registry_url, "https://"), "http://")
-  main_container_image = "${local.main_container_host}/${var.site_config.application_stack.docker_image_name}"
+  main_container_host  = try(trimprefix(trimprefix(var.site_config.application_stack.docker_registry_url, "https://"), "http://"), "")
+  main_container_image = try("${local.main_container_host}/${var.site_config.application_stack.docker_image_name}", "")
 }
 resource "azapi_resource" "main_container" {
   count      = local.is_container ? 1 : 0 # only run if the app is containerized
@@ -104,3 +104,13 @@ resource "azapi_resource" "datadog_sidecar" {
     }]
   } }
 }
+
+
+resource "azurerm_app_service_source_control" "codedeployment" {
+  app_id                 = azurerm_linux_web_app.this.id
+  repo_url               = "https://github.com/Azure-Samples/nodejs-docs-hello-world"
+  branch                 = "main"
+  use_manual_integration = true
+  use_mercurial          = false
+}
+
