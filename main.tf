@@ -104,13 +104,3 @@ resource "azapi_resource" "datadog_sidecar" {
     }]
   } }
 }
-
-
-resource "azurerm_app_service_source_control" "codedeployment" {
-  app_id                 = azurerm_linux_web_app.this.id
-  repo_url               = "https://github.com/Azure-Samples/nodejs-docs-hello-world"
-  branch                 = "main"
-  use_manual_integration = true
-  use_mercurial          = false
-}
-
