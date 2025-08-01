@@ -30,7 +30,7 @@ module "datadog_linux_web_app" {
   service_plan_id     = azurerm_service_plan.example.id
   site_config = {
     application_stack = {
-      node_version = "~22"
+      node_version = "22-lts"
     }
   }
   app_settings = { # additional app settings/features
