@@ -12,7 +12,7 @@ resource "azurerm_service_plan" "example" {
   resource_group_name = azurerm_resource_group.example.name
   name                = "${var.name}-service-plan"
   location            = var.location
-  sku_name            = "P1v2"
+  sku_name            = "B1"
   os_type             = "Linux"
 }
 
@@ -30,7 +30,7 @@ module "datadog_linux_web_app" {
   service_plan_id     = azurerm_service_plan.example.id
   site_config = {
     application_stack = {
-      node_version = "22-lts"
+        dotnet_version = "8.0"
     }
   }
   app_settings = { # additional app settings/features
@@ -43,7 +43,7 @@ module "datadog_linux_web_app" {
 
 resource "azurerm_app_service_source_control" "code_deployment" {
   app_id                 = module.datadog_linux_web_app.id
-  repo_url               = "https://github.com/Azure-Samples/nodejs-docs-hello-world"
+  repo_url               = "https://github.com/Azure-Samples/dotnetcore-docs-hello-world"
   branch                 = "main"
   use_manual_integration = true
   use_mercurial          = false
