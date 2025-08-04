@@ -48,7 +48,6 @@ resource "terraform_data" "code_deployment" { # Basic local deployment setup, re
   depends_on = [module.datadog_linux_web_app]
   provisioner "local-exec" {
     command = <<EOT
-    cd src
     zip code.zip app.py requirements.txt
     az webapp deploy -g ${azurerm_resource_group.example.name} -n ${module.datadog_linux_web_app.name} --src-path code.zip --type zip
     EOT

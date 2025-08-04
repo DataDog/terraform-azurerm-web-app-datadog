@@ -1,0 +1,17 @@
+{
+    "name": "dd-hello-world-aas-node",
+    "description": "Simple Hello World Node.js sample for Azure App Service",
+    "version": "0.0.1",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "dependencies": {
+        "body-parser": "^1.19.0",
+        "cors": "^2.8.5",
+        "dd-trace": "^5.61.1",
+        "express": "^4.17.1"
+    },
+    "engines": {
+        "node": ">=18"
+    }
+}
