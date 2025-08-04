@@ -53,7 +53,7 @@ variable "container_config" {
   description = "Additional Configuration for containerized applications. This is required if the application is a container."
   default     = null
   validation {
-    condition     = var.container_config == null ? true : !(var.container_config.is_musl && !var.container_config.is_dotnet)
+    condition     = var.container_config == null ? true : !(coalesce(var.container_config.is_musl, false) && !coalesce(var.container_config.is_dotnet, false))
     error_message = "The 'container_config.is_musl' variable can only be set to true if 'container_config.is_dotnet' is also true."
   }
 }
