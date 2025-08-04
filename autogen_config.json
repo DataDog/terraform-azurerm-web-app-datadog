@@ -1,5 +1,25 @@
 {
+    "$schema": "./autogen_config_schema.json",
     "provider": "hashicorp/azurerm",
     "resource": "azurerm_linux_web_app",
-    "impl": []
+    "fields": {
+        "impl": [
+            "app_settings",
+            "tags"
+        ],
+        "always_allow": [
+            "key_vault_reference_identity_id",
+            "zip_deploy_file"
+        ],
+        "always_sensitive": [
+            "app_settings",
+            "site_config"
+        ]
+    },
+    "additional_providers": [
+        {
+            "name": "Azure/azapi",
+            "version": "2.5.0"
+        }
+    ]
 }
