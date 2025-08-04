@@ -30,21 +30,26 @@ module "datadog_linux_web_app" {
   service_plan_id     = azurerm_service_plan.example.id
   site_config = {
     application_stack = {
-        php_version = "8.3"
+      php_version = "8.3"
     }
   }
-  app_settings = { # additional app settings/features
+  app_settings = {                # additional app settings/features
     DD_PROFILING_ENABLED = "true" # example feature enablement
+
+    SCM_DO_BUILD_DURING_DEPLOYMENT = "true" # Required for local deployment below
   }
   tags = { # additional resource tags
     test = "true"
   }
 }
 
-resource "azurerm_app_service_source_control" "code_deployment" {
-  app_id                 = module.datadog_linux_web_app.id
-  repo_url               = "https://github.com/Azure-Samples/php-docs-hello-world"
-  branch                 = "main"
-  use_manual_integration = true
-  use_mercurial          = false
+resource "terraform_data" "code_deployment" { # Basic local deployment setup, replace with your actual deployment method in prod
+  depends_on = [module.datadog_linux_web_app]
+  provisioner "local-exec" {
+    command = <<EOT
+    zip code.zip index.php php.ini
+    az webapp deploy -g ${azurerm_resource_group.example.name} -n ${module.datadog_linux_web_app.name} --src-path code.zip --type zip
+    EOT
+  }
 }
+
