@@ -21,13 +21,13 @@ for dir in * ; do
         continue
     fi
     echo "Deploying $dir"
-    cd "$dir"
+    cd "$dir" || exit
     echo "datadog_api_key = \"$DD_API_KEY\"
 location = \"eastus2\"
 name = \"$name-$dir-linux-webapp\"
 resource_group_name = \"$name-$dir-linux-webapp-rg\"
 subscription_id = \"$sub_id\"" > test.tfvars
-    terraform init -upgrade || (echo "failed to init $dir" && continue)
+    terraform init -upgrade || { echo "failed to init $dir" && continue; }
     terraform apply -auto-approve -var-file=test.tfvars -compact-warnings &
     cd ..
 done

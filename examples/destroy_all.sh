@@ -7,7 +7,6 @@ if ! command -v terraform &> /dev/null; then
     exit 1
 fi
 
-name=$(tr -cd '[:alnum:]' <<< "$USER")
 export TF_IN_AUTOMATION=true
 
 for dir in * ; do
@@ -15,7 +14,7 @@ for dir in * ; do
         continue
     fi
     echo "Destroying $dir resources"
-    cd "$dir"
+    cd "$dir" || exit
     if [[ ! -f "test.tfvars" ]]; then
         echo "Error: test.tfvars file not found in $dir"
         continue
