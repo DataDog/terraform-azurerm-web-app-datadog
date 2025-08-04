@@ -23,7 +23,7 @@ resource "terraform_data" "acr_push_image" {
         cd /tmp/hello-world
         az acr login --name ${azurerm_container_registry.example.name}
         dotnet add package Datadog.Trace.Bundle
-        docker buildx build -f Dockerfile.linux -t ${azurerm_container_registry.example.login_server}/hello-world:latest --push .
+        docker buildx build -f Dockerfile.linux --platform linux/amd64 -t ${azurerm_container_registry.example.login_server}/hello-world:latest --push .
     EOT
   }
   depends_on = [azurerm_container_registry.example]
@@ -56,7 +56,7 @@ module "datadog_linux_web_app" {
     }
   }
   container_config = {
-    port      = "8080"
+    port      = "80"
     is_dotnet = true
   }
   app_settings = {                # additional app settings/features
