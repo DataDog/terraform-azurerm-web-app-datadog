@@ -301,7 +301,6 @@ resource "azurerm_linux_web_app" "this" {
         node_version             = var.site_config.application_stack.node_version
         php_version              = var.site_config.application_stack.php_version
         python_version           = var.site_config.application_stack.python_version
-        ruby_version             = var.site_config.application_stack.ruby_version
       }
     }
     dynamic "auto_heal_setting" {

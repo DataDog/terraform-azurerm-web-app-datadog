@@ -12,7 +12,8 @@
             "zip_deploy_file"
         ],
         "never_allow": [
-            "go_version"
+            "go_version",
+            "ruby_version"
         ],
         "always_sensitive": [
             "app_settings",

@@ -330,8 +330,7 @@ variable "site_config" {
       java_version             = optional(string),
       node_version             = optional(string),
       php_version              = optional(string),
-      python_version           = optional(string),
-      ruby_version             = optional(string)
+      python_version           = optional(string)
     })),
     auto_heal_setting = optional(object({
       action = optional(object({
