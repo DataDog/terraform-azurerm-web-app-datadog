@@ -7,6 +7,7 @@ variable "datadog_api_key" {
 variable "datadog_site" {
   type    = string
   default = "datadoghq.com"
+  nullable = false
   validation {
     condition = contains(
       [

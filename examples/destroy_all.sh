@@ -19,6 +19,10 @@ for dir in * ; do
         echo "Error: test.tfvars file not found in $dir"
         continue
     fi
+    if [[ $1 == "-f" || $1 == "--force" ]]; then
+        az group delete -n "avasilver-$dir-linux-webapp-rg" --yes &
+        cd .. && continue
+    fi
     if [[ ! -f terraform.tfstate ]]; then
         echo "Error: terraform.tfstate file not found in $dir. Please deploy first."
         continue
