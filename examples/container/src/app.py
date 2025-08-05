@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 @app.route("/")
 @tracer.wrap()
 def hello_world():
-    logger.info("Hello Datadog logger using Python!")
-    return "Hello World from Python!"
+    logger.info("Hello Datadog logger using Containerized Python!")
+    return "Hello World from Containerized Python!"
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))

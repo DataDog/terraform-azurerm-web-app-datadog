@@ -53,8 +53,7 @@ module "datadog_linux_web_app" {
     }
   }
   container_config = {
-    port      = "80"
-    is_dotnet = true
+    port = "8080"
   }
   app_settings = {                # additional app settings/features
     DD_PROFILING_ENABLED = "true" # example feature enablement
