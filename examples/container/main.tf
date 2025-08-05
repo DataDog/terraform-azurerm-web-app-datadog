@@ -19,11 +19,8 @@ resource "azurerm_container_registry" "example" {
 resource "terraform_data" "acr_push_image" {
   provisioner "local-exec" {
     command = <<EOT
-        git clone https://github.com/Azure-Samples/dotnetcore-docs-hello-world.git /tmp/hello-world
-        cd /tmp/hello-world
         az acr login --name ${azurerm_container_registry.example.name}
-        dotnet add package Datadog.Trace.Bundle
-        docker buildx build -f Dockerfile.linux --platform linux/amd64 -t ${azurerm_container_registry.example.login_server}/hello-world:latest --push .
+        docker buildx build --platform linux/amd64 -t ${azurerm_container_registry.example.login_server}/hello-world:latest --push ./src
     EOT
   }
   depends_on = [azurerm_container_registry.example]
