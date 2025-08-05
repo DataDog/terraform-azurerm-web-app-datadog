@@ -1,3 +1,9 @@
 <?php
+require __DIR__ . '/vendor/autoload.php';
 
-echo "Hello World!";
+#[\DDTrace\Trace]
+function helloWorld() {
+    echo "Hello World from PHP!";
+}
+
+helloWorld();
