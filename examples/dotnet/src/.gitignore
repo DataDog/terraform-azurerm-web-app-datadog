@@ -70,7 +70,6 @@ TestResults/
 
 # Publish
 publish/
-wwwroot/
 
 # Local secrets
 secrets.json

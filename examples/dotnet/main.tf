@@ -48,7 +48,7 @@ resource "terraform_data" "code_deployment" { # Basic local deployment setup, re
   provisioner "local-exec" {
     command = <<EOT
     cd src
-    zip -r code.zip Pages Properties appsettings.json src.csproj Program.cs
+    zip -r code.zip Pages Properties wwwroot appsettings.json src.csproj Program.cs
     az webapp deploy -g ${azurerm_resource_group.example.name} -n ${module.datadog_linux_web_app.name} --src-path code.zip --type zip
     EOT
   }
