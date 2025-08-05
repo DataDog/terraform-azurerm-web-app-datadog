@@ -325,7 +325,6 @@ variable "site_config" {
       docker_registry_url      = optional(string),
       docker_registry_username = optional(string),
       dotnet_version           = optional(string),
-      go_version               = optional(string),
       java_server              = optional(string),
       java_server_version      = optional(string),
       java_version             = optional(string),

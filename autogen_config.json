@@ -11,6 +11,9 @@
             "key_vault_reference_identity_id",
             "zip_deploy_file"
         ],
+        "never_allow": [
+            "go_version"
+        ],
         "always_sensitive": [
             "app_settings",
             "site_config"

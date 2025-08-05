@@ -295,7 +295,6 @@ resource "azurerm_linux_web_app" "this" {
         docker_registry_url      = var.site_config.application_stack.docker_registry_url
         docker_registry_username = var.site_config.application_stack.docker_registry_username
         dotnet_version           = var.site_config.application_stack.dotnet_version
-        go_version               = var.site_config.application_stack.go_version
         java_server              = var.site_config.application_stack.java_server
         java_server_version      = var.site_config.application_stack.java_server_version
         java_version             = var.site_config.application_stack.java_version
