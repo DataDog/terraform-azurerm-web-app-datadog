@@ -11,7 +11,7 @@ for dir in * ; do
     fi
     app_name="$name-$dir-linux-webapp"
     echo "Testing $app_name"
-    open "https://$app_name.azurewebsites.net"
+    curl "https://$app_name.azurewebsites.net"
 done
 
 echo "✅ Done"
