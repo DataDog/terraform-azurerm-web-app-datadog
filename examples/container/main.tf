@@ -8,6 +8,24 @@ resource "azurerm_resource_group" "example" {
   location = var.location
 }
 
+resource "azurerm_container_registry" "example" {
+  name                   = "${replace(var.name, "/\\W|_|\\s/", "")}acr"
+  resource_group_name    = azurerm_resource_group.example.name
+  location               = var.location
+  sku                    = "Standard"
+  anonymous_pull_enabled = true
+}
+
+resource "terraform_data" "acr_push_image" {
+  provisioner "local-exec" {
+    command = <<EOT
+        az acr login --name ${azurerm_container_registry.example.name}
+        docker buildx build --platform linux/amd64 -t ${azurerm_container_registry.example.login_server}/hello-world:latest --push ./src
+    EOT
+  }
+  depends_on = [azurerm_container_registry.example]
+}
+
 resource "azurerm_service_plan" "example" {
   resource_group_name = azurerm_resource_group.example.name
   name                = "${var.name}-service-plan"
@@ -30,26 +48,17 @@ module "datadog_linux_web_app" {
   service_plan_id     = azurerm_service_plan.example.id
   site_config = {
     application_stack = {
-      node_version = "22-lts"
+      docker_registry_url = "https://${azurerm_container_registry.example.login_server}"
+      docker_image_name   = "hello-world:latest"
     }
   }
-  app_settings = { # additional app settings/features
+  container_config = {
+    port = "8080"
+  }
+  app_settings = {                # additional app settings/features
     DD_PROFILING_ENABLED = "true" # example feature enablement
-
-    SCM_DO_BUILD_DURING_DEPLOYMENT = "true" # Required for local deployment below
   }
   tags = { # additional resource tags
     test = "true"
-  }
-}
-
-
-resource "terraform_data" "code_deployment" { # Basic local deployment setup, replace with your actual deployment method in prod
-  depends_on = [module.datadog_linux_web_app]
-  provisioner "local-exec" {
-    command = <<EOT
-    zip code.zip index.js package.json
-    az webapp deploy -g ${azurerm_resource_group.example.name} -n ${module.datadog_linux_web_app.name} --src-path code.zip --type zip
-    EOT
   }
 }

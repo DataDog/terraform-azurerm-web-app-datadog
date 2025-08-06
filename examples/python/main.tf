@@ -30,10 +30,10 @@ module "datadog_linux_web_app" {
   service_plan_id     = azurerm_service_plan.example.id
   site_config = {
     application_stack = {
-      node_version = "22-lts"
+      python_version = "3.13"
     }
   }
-  app_settings = { # additional app settings/features
+  app_settings = {                # additional app settings/features
     DD_PROFILING_ENABLED = "true" # example feature enablement
 
     SCM_DO_BUILD_DURING_DEPLOYMENT = "true" # Required for local deployment below
@@ -48,7 +48,7 @@ resource "terraform_data" "code_deployment" { # Basic local deployment setup, re
   depends_on = [module.datadog_linux_web_app]
   provisioner "local-exec" {
     command = <<EOT
-    zip code.zip index.js package.json
+    zip code.zip app.py requirements.txt
     az webapp deploy -g ${azurerm_resource_group.example.name} -n ${module.datadog_linux_web_app.name} --src-path code.zip --type zip
     EOT
   }
