@@ -15,8 +15,9 @@ for os in * ; do
             continue
         fi
         app_name="$name-$runtime-$os-webapp"
-        echo "Testing $app_name"
+        echo "========== Testing $app_name =========="
         curl "https://$app_name.azurewebsites.net"
+        echo -e "\n\n"
     done
     cd ..
 done

@@ -12,7 +12,7 @@ resource "azurerm_service_plan" "example" {
   resource_group_name = azurerm_resource_group.example.name
   name                = "${var.name}-service-plan"
   location            = var.location
-  sku_name            = "B1"
+  sku_name            = "P1v2"
   os_type             = "Windows"
 }
 
