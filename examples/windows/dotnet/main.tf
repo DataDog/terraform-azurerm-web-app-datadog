@@ -54,4 +54,3 @@ resource "terraform_data" "code_deployment" { # Basic local deployment setup, re
     EOT
   }
 }
-

@@ -33,7 +33,7 @@ module "datadog_linux_web_app" {
       node_version = "22-lts"
     }
   }
-  app_settings = { # additional app settings/features
+  app_settings = {                # additional app settings/features
     DD_PROFILING_ENABLED = "true" # example feature enablement
 
     SCM_DO_BUILD_DURING_DEPLOYMENT = "true" # Required for local deployment below
