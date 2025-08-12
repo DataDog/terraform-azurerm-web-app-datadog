@@ -20,7 +20,7 @@ for dir in * ; do
         continue
     fi
     if [[ $1 == "-f" || $1 == "--force" ]]; then
-        az group delete -n "avasilver-$dir-linux-webapp-rg" --yes &
+        az group delete -n "avasilver-$dir-windows-webapp-rg" --yes &
         cd .. && continue
     fi
     if [[ ! -f terraform.tfstate ]]; then
