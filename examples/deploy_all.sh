@@ -16,19 +16,26 @@ name=$(tr -cd '[:alnum:]' <<< "$USER")
 sub_id=$(az account show --query id -o tsv)
 export TF_IN_AUTOMATION=true
 
-for dir in * ; do
-    if [[ ! -d "$dir" ]]; then
+for os in * ; do
+    if [[ ! -d "$os" ]]; then
         continue
     fi
-    echo "Deploying $dir"
-    cd "$dir" || exit
-    echo "datadog_api_key = \"$DD_API_KEY\"
+    cd "$os" || exit
+    for runtime in * ; do
+        if [[ ! -d "$runtime" ]]; then
+            continue
+        fi
+        echo "Deploying $runtime on $os"
+        cd "$runtime" || exit
+        echo "datadog_api_key = \"$DD_API_KEY\"
 location = \"eastus2\"
-name = \"$name-$dir-linux-webapp\"
-resource_group_name = \"$name-$dir-linux-webapp-rg\"
+name = \"$name-$runtime-$os-webapp\"
+resource_group_name = \"$name-$runtime-$os-webapp-rg\"
 subscription_id = \"$sub_id\"" > test.tfvars
-    terraform init -upgrade || { echo "failed to init $dir" && continue; }
-    terraform apply -auto-approve -var-file=test.tfvars -compact-warnings &
+        terraform init -upgrade || { echo "failed to init $os $runtime" && continue; }
+        terraform apply -auto-approve -var-file=test.tfvars -compact-warnings &
+        cd ..
+    done
     cd ..
 done
 wait
