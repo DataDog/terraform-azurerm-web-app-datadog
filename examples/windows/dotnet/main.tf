@@ -17,7 +17,7 @@ resource "azurerm_service_plan" "example" {
 }
 
 module "datadog_windows_web_app" {
-  source          = "../../"
+  source          = "../../../modules/windows"
   datadog_api_key = var.datadog_api_key
   datadog_site    = var.datadog_site
   datadog_env     = "dev"
