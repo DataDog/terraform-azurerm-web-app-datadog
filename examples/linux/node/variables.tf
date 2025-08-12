@@ -28,4 +28,3 @@ variable "location" {
   type     = string
   nullable = false
 }
-
