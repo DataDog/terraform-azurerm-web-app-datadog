@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -uo pipefail
+set -auo pipefail
 
 if ! command -v terraform &> /dev/null; then
     echo "Error: terraform command not found. Please install Terraform."
@@ -24,7 +24,7 @@ for os in * ; do
             continue
         fi
         if [[ ${1:-} == "-f" || ${1:-} == "--force" ]]; then
-            az group delete -n "avasilver-$runtime-linux-webapp-rg" --yes &
+            az group delete -n "$(./name.sh)-rg" --yes &
             cd .. && continue
         fi
         if [[ ! -f terraform.tfstate ]]; then
