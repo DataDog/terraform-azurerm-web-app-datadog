@@ -12,12 +12,12 @@ resource "azurerm_service_plan" "example" {
   resource_group_name = azurerm_resource_group.example.name
   name                = "${var.name}-service-plan"
   location            = var.location
-  sku_name            = "B1"
+  sku_name            = "P1v2"
   os_type             = "Windows"
 }
 
 module "datadog_windows_web_app" {
-  source          = "../../"
+  source          = "../../../modules/windows"
   datadog_api_key = var.datadog_api_key
   datadog_site    = var.datadog_site
   datadog_env     = "dev"
