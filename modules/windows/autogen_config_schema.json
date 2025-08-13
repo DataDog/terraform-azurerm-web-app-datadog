@@ -87,6 +87,12 @@
       },
       "title": "Additional Providers",
       "type": "array"
+    },
+    "scrape_docs": {
+      "default": false,
+      "description": "(Experimental) Scrape documentation for the resource field descriptions.",
+      "title": "Scrape Docs",
+      "type": "boolean"
     }
   },
   "required": [
