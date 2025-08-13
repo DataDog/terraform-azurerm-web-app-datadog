@@ -13,3 +13,8 @@ repos:
         entry: terraform fmt -recursive .
         language: system
         types: [terraform]
+      - id: terraform-docs
+        name: generate terraform docs
+        entry: bash -c "find modules -type d -maxdepth 1 -mindepth 1 | xargs -I{} terraform-docs {} --config .terraform-docs.yml"
+        language: system
+        types: [terraform]
