@@ -26,7 +26,7 @@ for os in * ; do
         fi
         echo "Deploying $runtime on $os"
         cd "$runtime" || exit
-        app_name=$(./name.sh)
+        app_name=$(../../name.sh)
         echo "datadog_api_key = \"$DD_API_KEY\"
 location = \"eastus2\"
 name = \"$app_name\"

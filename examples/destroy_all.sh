@@ -17,15 +17,15 @@ for os in * ; do
         if [[ ! -d "$runtime" ]]; then
             continue
         fi
-        echo "Destroying $runtime resources"
+        echo "Destroying $os $runtime resources"
+        if [[ ${1:-} == "-f" || ${1:-} == "--force" ]]; then
+            az group delete -n "$(../name.sh)-rg" --yes &
+            continue
+        fi
         cd "$runtime" || exit
         if [[ ! -f "test.tfvars" ]]; then
             echo "Error: test.tfvars file not found in $runtime"
             continue
-        fi
-        if [[ ${1:-} == "-f" || ${1:-} == "--force" ]]; then
-            az group delete -n "$(./name.sh)-rg" --yes &
-            cd .. && continue
         fi
         if [[ ! -f terraform.tfstate ]]; then
             echo "Error: terraform.tfstate file not found in $runtime. Please deploy first."
