@@ -7,7 +7,7 @@ variable "app_settings" {
   type        = map(string)
   default     = null
   description = <<DESCRIPTION
-ue pairs of App Settings.
+A map of key-value pairs of App Settings.
 DESCRIPTION
 }
 
