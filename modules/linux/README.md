@@ -1,3 +1,114 @@
+# Datadog Azure Linux Web App Terraform Module
+
+> **Technical Preview**: This module is in technical preview. While it is functional, we recommend validating it in your environment before widespread use.
+> If you encounter any issues, please open a GitHub issue to let us know.
+
+Use this Terraform module to deploy an Azure Linux Web App with integrated Datadog monitoring.
+
+This module wraps the [azurerm_linux_web_app](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_web_app) resource and configures the Datadog extension using [azapi_resource](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource). It provides a simple interface to enable Datadog monitoring, Unified Service Tagging, and other best practices for observability on Azure App Service (Linux).
+
+## Web App for Containers Disclaimer
+
+Unfortunately, since the `azurerm` does not provide support for Web App Sitecontainers, we instead use a workaround for containerized web apps to patch the web app after creation to add a sidecar once the web app is created. As such, if you are using containerized web apps (`site_config.application_stack.docker_*` variables), expect drift in the terraform state once the resource is created.
+
+
+## Usage
+
+```hcl
+module "linux_web_app_datadog" {
+  source = "DataDog/web-app-datadog/azurerm//modules/linux"
+
+  name                = "example-app"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+  service_plan_id     = azurerm_service_plan.example.id
+
+  datadog_api_key     = var.datadog_api_key
+  datadog_site        = "datadoghq.com" # or your Datadog site
+  datadog_env         = "prod"
+  datadog_service     = "my-linux-app"
+  datadog_version     = "1.0.0"
+
+  site_config = {
+    application_stack = {
+      python_version = "3.11"
+    }
+    always_on = true
+  }
+
+  app_settings = {
+    WEBSITE_RUN_FROM_PACKAGE = 1
+  }
+
+  zip_deploy_file = "./src/code.zip"
+}
+```
+
+## Configuration
+
+### Azure Linux Web App
+
+This module exposes all supported arguments available in the [azurerm_linux_web_app](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_web_app) resource. Configuration blocks are provided as nested objects or maps, as shown in the example above. See the [Inputs](#inputs) section for all supported variables.
+
+### Datadog Integration
+
+- **API Key**: The `datadog_api_key` variable is required. You can generate an API key in the [Datadog API Keys page](https://app.datadoghq.com/organization-settings/api-keys).
+- **Site**: The `datadog_site` variable defaults to `datadoghq.com`. Set this to your Datadog region if needed (e.g., `datadoghq.eu`).
+- **Unified Service Tagging**: Use `datadog_env`, `datadog_service`, and `datadog_version` to enable [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/).
+- **App Settings**: If you use `zip_deploy_file`, set `WEBSITE_RUN_FROM_PACKAGE=1` in `app_settings`.
+
+The module will automatically configure the Datadog extension for your web app, enabling metrics, traces, and logs collection.
+
+### Example: Minimal Configuration
+
+```hcl
+module "linux_web_app_datadog" {
+  source = "DataDog/web-app-datadog/azurerm//modules/linux"
+
+  name                = "my-app"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  service_plan_id     = azurerm_service_plan.sp.id
+  datadog_api_key     = var.datadog_api_key
+  site_config = {
+    application_stack = {
+      python_version = "3.11"
+    }
+  }
+}
+```
+
+### Example: Deploying a ZIP Package
+
+```hcl
+module "linux_web_app_datadog" {
+  source = "DataDog/web-app-datadog/azurerm//modules/linux"
+
+  name                = "my-app"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  service_plan_id     = azurerm_service_plan.sp.id
+  datadog_api_key     = var.datadog_api_key
+  zip_deploy_file     = "./src/code.zip"
+  app_settings = {
+    WEBSITE_RUN_FROM_PACKAGE = 1
+  }
+  site_config = {
+    application_stack = {
+      python_version = "3.11"
+    }
+  }
+}
+```
+
+### Datadog Documentation
+
+- [Azure App Service for Linux](https://docs.datadoghq.com/serverless/azure_app_services/azure_app_services_linux)
+- [Azure App Service for Linux Containers](https://docs.datadoghq.com/serverless/azure_app_services/azure_app_services_container)
+- [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/)
+
+---
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
