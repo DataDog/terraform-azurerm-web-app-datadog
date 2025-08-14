@@ -2,6 +2,7 @@
     "$schema": "./autogen_config_schema.json",
     "provider": "hashicorp/azurerm",
     "resource": "azurerm_linux_web_app",
+    "scrape_docs": true,
     "fields": {
         "impl": [
             "app_settings",
