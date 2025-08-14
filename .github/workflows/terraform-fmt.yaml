@@ -5,7 +5,9 @@ permissions:
 
 on:
   pull_request:
-    paths: ['modules/**', 'examples/**']
+    paths:
+      - 'modules/**'
+      - 'examples/**'
 
 jobs:
   terraform-fmt:
