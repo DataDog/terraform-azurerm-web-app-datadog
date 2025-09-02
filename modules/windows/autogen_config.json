@@ -9,21 +9,21 @@
             "tags"
         ],
         "always_allow": [
-            "current_stack",
-            "dotnet_version",
+            "site_config.application_stack.current_stack",
+            "site_config.application_stack.dotnet_version",
             "key_vault_reference_identity_id",
             "zip_deploy_file"
         ],
         "never_allow": [
-            "java_container",
-            "java_container_version",
-            "python",
-            "tomcat_version",
-            "docker_image_name",
-            "docker_registry_password",
-            "docker_registry_url",
-            "docker_registry_username",
-            "dotnet_core_version"
+            "site_config.application_stack.java_container",
+            "site_config.application_stack.java_container_version",
+            "site_config.application_stack.python",
+            "site_config.application_stack.tomcat_version",
+            "site_config.application_stack.docker_image_name",
+            "site_config.application_stack.docker_registry_password",
+            "site_config.application_stack.docker_registry_url",
+            "site_config.application_stack.docker_registry_username",
+            "site_config.application_stack.dotnet_core_version"
         ],
         "always_sensitive": [
             "app_settings",

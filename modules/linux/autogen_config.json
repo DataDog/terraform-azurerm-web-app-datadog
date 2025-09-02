@@ -13,8 +13,8 @@
             "zip_deploy_file"
         ],
         "never_allow": [
-            "go_version",
-            "ruby_version"
+            "site_config.application_stack.go_version",
+            "site_config.application_stack.ruby_version"
         ],
         "always_sensitive": [
             "app_settings",

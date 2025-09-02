@@ -3,7 +3,7 @@
     "FieldsConfig": {
       "properties": {
         "impl": {
-          "description": "Fields to implement in locals",
+          "description": "Field paths to implement in locals, eg 'properties.something.foo",
           "items": {
             "type": "string"
           },
@@ -11,7 +11,7 @@
           "type": "array"
         },
         "always_allow": {
-          "description": "Fields that are always included in user input variables and implemented, even if computed",
+          "description": "Field paths that are always included in user input variables and implemented, even if computed",
           "items": {
             "type": "string"
           },
@@ -19,7 +19,7 @@
           "type": "array"
         },
         "never_allow": {
-          "description": "Fields that are never included in user input variables or implemented, often due to support/deprecation issues",
+          "description": "Field paths that are never included in user input variables or implemented, often due to support/deprecation issues",
           "items": {
             "type": "string"
           },
@@ -27,7 +27,7 @@
           "type": "array"
         },
         "always_sensitive": {
-          "description": "Fields that should always be marked sensitive in the outputs",
+          "description": "Top level fields that should always be marked sensitive in the outputs",
           "items": {
             "type": "string"
           },
