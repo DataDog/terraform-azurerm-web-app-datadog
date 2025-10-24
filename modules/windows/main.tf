@@ -1,24 +1,27 @@
 # Unless explicitly stated otherwise all files in this repository are licensed under the Apache-2.0 License.
 # This product includes software developed at Datadog (https://www.datadoghq.com/) Copyright 2025 Datadog, Inc.
 
+# Local Definitions
+locals {
+  datadog_service = coalesce(var.datadog_service, var.name)
+}
+
 # Resource Implementation Locals
 locals {
   app_settings = merge(
     {
       DD_API_KEY = var.datadog_api_key
       DD_SITE    = var.datadog_site
-      DD_ENV     = var.datadog_env,
-      DD_SERVICE = var.datadog_service,
-      DD_VERSION = var.datadog_version,
+      DD_SERVICE = local.datadog_service,
     },
+    var.datadog_env != null ? { DD_ENV = var.datadog_env } : {},
+    var.datadog_version != null ? { DD_VERSION = var.datadog_version } : {},
     var.app_settings
   )
   tags = merge(
-    {
-      env     = var.datadog_env,
-      service = var.datadog_service,
-      version = var.datadog_version,
-    },
+    { service = local.datadog_service },
+    var.datadog_env != null ? { env = var.datadog_env } : {},
+    var.datadog_version != null ? { version = var.datadog_version } : {},
     var.tags
   )
 
