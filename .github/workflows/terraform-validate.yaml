@@ -25,18 +25,23 @@ jobs:
       - name: Run terraform validate check
         run: |
           echo "Validating modules..."
+          has_error=false
           for dir in modules/*/; do
             if [ -d "$dir" ]; then
               echo "Validating $dir"
-              terraform -chdir="$dir" init
-              terraform -chdir="$dir" validate
+              terraform -chdir="$dir" init || has_error=true
+              terraform -chdir="$dir" validate || has_error=true
             fi
           done
           echo "Validating examples..."
           for dir in examples/*/*/; do
             if [ -d "$dir" ]; then
               echo "Validating $dir"
-              terraform -chdir="$dir" init
-              terraform -chdir="$dir" validate
+              terraform -chdir="$dir" init || has_error=true
+              terraform -chdir="$dir" validate || has_error=true
             fi
           done
+          if [ "$has_error" = true ]; then
+            echo "Validation failed for one or more directories"
+            exit 1
+          fi
