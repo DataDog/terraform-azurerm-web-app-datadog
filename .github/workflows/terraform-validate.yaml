@@ -1,4 +1,4 @@
-name: Terraform Format Check
+name: Terraform Validate Check
 
 permissions:
   contents: read
@@ -6,8 +6,7 @@ permissions:
 on:
   pull_request:
     paths:
-      - 'modules/**'
-      - 'examples/**'
+      - '**'
 
 jobs:
   terraform-validate:
@@ -25,5 +24,24 @@ jobs:
 
       - name: Run terraform validate check
         run: |
-          find modules -type d -maxdepth 1 -mindepth 1 -exec echo Validating {} \; -exec terraform -chdir="{}" init \; -exec terraform -chdir="{}" validate \;
-          find examples -type d -maxdepth 2 -mindepth 2 -exec echo Validating {} \; -exec terraform -chdir="{}" init \; -exec terraform -chdir="{}" validate \;
+          echo "Validating modules..."
+          has_error=false
+          for dir in modules/*/; do
+            if [ -d "$dir" ]; then
+              echo "Validating $dir"
+              terraform -chdir="$dir" init || has_error=true
+              terraform -chdir="$dir" validate || has_error=true
+            fi
+          done
+          echo "Validating examples..."
+          for dir in examples/*/*/; do
+            if [ -d "$dir" ]; then
+              echo "Validating $dir"
+              terraform -chdir="$dir" init || has_error=true
+              terraform -chdir="$dir" validate || has_error=true
+            fi
+          done
+          if [ "$has_error" = true ]; then
+            echo "Validation failed for one or more directories"
+            exit 1
+          fi
