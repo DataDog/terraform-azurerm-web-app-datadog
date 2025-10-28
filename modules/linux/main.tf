@@ -3,6 +3,7 @@
 
 # Local Definitions
 locals {
+  module_version      = "1.0.1"
   is_container        = try(var.site_config.application_stack.docker_image_name, null) != null
   is_dotnet_container = coalesce(try(var.container_config.is_dotnet, null), false)
   is_musl_container   = coalesce(try(var.container_config.is_musl, null), false)
@@ -86,7 +87,7 @@ locals {
     var.app_settings
   )
   tags = merge(
-    { service = local.datadog_service },
+    { service = local.datadog_service, dd_sls_terraform_module = local.module_version },
     var.datadog_env != null ? { env = var.datadog_env } : {},
     var.datadog_version != null ? { version = var.datadog_version } : {},
     var.tags
