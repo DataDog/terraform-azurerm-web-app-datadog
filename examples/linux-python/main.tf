@@ -28,6 +28,7 @@ module "datadog_linux_web_app" {
   name                = var.name
   location            = var.location
   service_plan_id     = azurerm_service_plan.example.id
+  https_only          = true
   site_config = {
     application_stack = {
       python_version = "3.13"
