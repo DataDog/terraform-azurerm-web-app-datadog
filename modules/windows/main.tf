@@ -3,6 +3,7 @@
 
 # Local Definitions
 locals {
+  module_version  = "1.0.1"
   datadog_service = coalesce(var.datadog_service, var.name)
 }
 
@@ -19,7 +20,7 @@ locals {
     var.app_settings
   )
   tags = merge(
-    { service = local.datadog_service },
+    { service = local.datadog_service, dd_sls_terraform_module = local.module_version },
     var.datadog_env != null ? { env = var.datadog_env } : {},
     var.datadog_version != null ? { version = var.datadog_version } : {},
     var.tags
