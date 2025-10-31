@@ -14,28 +14,20 @@ fi
 
 sub_id=$(az account show --query id -o tsv)
 export TF_IN_AUTOMATION=true
-
-for os in * ; do
-    if [[ ! -d "$os" ]]; then
+for example in * ; do
+    if [[ ! -d "$example" ]]; then
         continue
     fi
-    cd "$os" || exit
-    for runtime in * ; do
-        if [[ ! -d "$runtime" ]]; then
-            continue
-        fi
-        echo "Deploying $runtime on $os"
-        cd "$runtime" || exit
-        app_name=$(../../name.sh)
-        echo "datadog_api_key = \"$DD_API_KEY\"
+    echo "Deploying $example"
+    app_name=$(./name.sh)
+    cd "$example" || exit
+    echo "datadog_api_key = \"$DD_API_KEY\"
 location = \"eastus2\"
 name = \"$app_name\"
 resource_group_name = \"$app_name-rg\"
 subscription_id = \"$sub_id\"" > test.tfvars
-        terraform init -upgrade || { echo "failed to init $os $runtime" && continue; }
-        terraform apply -auto-approve -var-file=test.tfvars -compact-warnings &
-        cd ..
-    done
+    terraform init -upgrade || { echo "failed to init $example" && continue; }
+    terraform apply -auto-approve -var-file=test.tfvars -compact-warnings &
     cd ..
 done
 wait
