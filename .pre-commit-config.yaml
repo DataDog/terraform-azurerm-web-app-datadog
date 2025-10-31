@@ -15,6 +15,6 @@ repos:
         types: [terraform]
       - id: terraform-docs
         name: regenerate terraform docs
-        entry: bash -c "find modules -type d -maxdepth 1 -mindepth 1 | xargs -I{} terraform-docs {} --config .terraform-docs.yml"
+        entry: terraform-docs . --recursive --config .terraform-docs.yml --recursive-include-main=false && terraform-docs . --recursive --config .terraform-docs.yml --recursive-include-main=false --recursive-path=examples
         language: system
         types: [terraform]
