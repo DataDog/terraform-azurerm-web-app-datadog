@@ -1,2 +1,2 @@
 set -u
-echo "$(tr -cd '[:alnum:]' <<< "$USER")-$runtime-$os-webapp"
+echo "$(tr -cd '[:alnum:]' <<< "$USER")-$example-webapp"

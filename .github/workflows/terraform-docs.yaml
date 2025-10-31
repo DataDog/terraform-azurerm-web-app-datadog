@@ -32,3 +32,4 @@ jobs:
       - name: Check Docs are up to date
         run: |
           terraform-docs . --recursive --output-check --config .terraform-docs.yml --recursive-include-main=false
+          terraform-docs . --recursive --output-check --config .terraform-docs.yml --recursive-include-main=false --recursive-path=examples

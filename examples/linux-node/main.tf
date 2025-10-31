@@ -13,11 +13,11 @@ resource "azurerm_service_plan" "example" {
   name                = "${var.name}-service-plan"
   location            = var.location
   sku_name            = "P1v2"
-  os_type             = "Windows"
+  os_type             = "Linux"
 }
 
-module "datadog_windows_web_app" {
-  source          = "../../../modules/windows"
+module "datadog_linux_web_app" {
+  source          = "../../modules/linux"
   datadog_api_key = var.datadog_api_key
   datadog_site    = var.datadog_site
   datadog_env     = "dev"
@@ -28,9 +28,10 @@ module "datadog_windows_web_app" {
   name                = var.name
   location            = var.location
   service_plan_id     = azurerm_service_plan.example.id
+  https_only          = true
   site_config = {
     application_stack = {
-      node_version = "~22"
+      node_version = "22-lts"
     }
   }
   app_settings = {                # additional app settings/features
@@ -43,12 +44,13 @@ module "datadog_windows_web_app" {
   }
 }
 
+
 resource "terraform_data" "code_deployment" { # Basic local deployment setup, replace with your actual deployment method in prod
-  depends_on = [module.datadog_windows_web_app]
+  depends_on = [module.datadog_linux_web_app]
   provisioner "local-exec" {
     command = <<EOT
     zip code.zip index.js package.json
-    az webapp deploy -g ${azurerm_resource_group.example.name} -n ${module.datadog_windows_web_app.name} --src-path code.zip --type zip
+    az webapp deploy -g ${azurerm_resource_group.example.name} -n ${module.datadog_linux_web_app.name} --src-path code.zip --type zip
     EOT
   }
 }

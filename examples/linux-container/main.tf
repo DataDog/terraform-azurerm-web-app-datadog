@@ -35,7 +35,7 @@ resource "azurerm_service_plan" "example" {
 }
 
 module "datadog_linux_web_app" {
-  source          = "../../../modules/linux"
+  source          = "../../modules/linux"
   datadog_api_key = var.datadog_api_key
   datadog_site    = var.datadog_site
   datadog_env     = "dev"
@@ -46,6 +46,7 @@ module "datadog_linux_web_app" {
   name                = var.name
   location            = var.location
   service_plan_id     = azurerm_service_plan.example.id
+  https_only          = true
   site_config = {
     application_stack = {
       docker_registry_url = "https://${azurerm_container_registry.example.login_server}"

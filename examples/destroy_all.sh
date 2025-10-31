@@ -8,32 +8,26 @@ if ! command -v terraform &> /dev/null; then
 fi
 
 export TF_IN_AUTOMATION=true
-for os in * ; do
-    if [[ ! -d "$os" ]]; then
+
+for example in *; do
+    if [[ ! -d "$example" ]]; then
         continue
     fi
-    cd "$os" || exit
-    for runtime in * ; do
-        if [[ ! -d "$runtime" ]]; then
-            continue
-        fi
-        echo "Destroying $os $runtime resources"
-        if [[ ${1:-} == "-f" || ${1:-} == "--force" ]]; then
-            az group delete -n "$(../name.sh)-rg" --yes &
-            continue
-        fi
-        cd "$runtime" || exit
-        if [[ ! -f "test.tfvars" ]]; then
-            echo "Error: test.tfvars file not found in $runtime"
-            continue
-        fi
-        if [[ ! -f terraform.tfstate ]]; then
-            echo "Error: terraform.tfstate file not found in $runtime. Please deploy first."
-            continue
-        fi
-        terraform destroy -auto-approve -var-file=test.tfvars -compact-warnings &
-        cd ..
-    done
+    echo "Destroying $example"
+    if [[ ${1:-} == "-f" || ${1:-} == "--force" ]]; then
+        az group delete -n "$(./name.sh)-rg" --yes &
+        continue
+    fi
+    cd "$example" || exit
+    if [[ ! -f "test.tfvars" ]]; then
+        echo "Error: test.tfvars file not found in $example"
+        continue
+    fi
+    if [[ ! -f terraform.tfstate ]]; then
+        echo "Error: terraform.tfstate file not found in $example. Please deploy first."
+        continue
+    fi
+    terraform destroy -auto-approve -var-file=test.tfvars -compact-warnings &
     cd ..
 done
 wait
