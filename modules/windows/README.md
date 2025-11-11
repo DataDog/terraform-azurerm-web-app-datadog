@@ -110,7 +110,7 @@ module "windows_web_app_datadog" {
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.0 |
 | <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | >= 2.5.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 4.24.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 4.52.0 |
 
 ## Modules
 
@@ -202,6 +202,7 @@ No modules.
 | <a name="output_tags"></a> [tags](#output\_tags) | A mapping of tags which should be assigned to the Windows Web App. |
 | <a name="output_timeouts"></a> [timeouts](#output\_timeouts) | n/a |
 | <a name="output_virtual_network_backup_restore_enabled"></a> [virtual\_network\_backup\_restore\_enabled](#output\_virtual\_network\_backup\_restore\_enabled) | Whether backup and restore operations over the linked virtual network are enabled. Defaults to `false`. |
+| <a name="output_virtual_network_image_pull_enabled"></a> [virtual\_network\_image\_pull\_enabled](#output\_virtual\_network\_image\_pull\_enabled) | Whether traffic for the image pull should be routed over the virtual network. |
 | <a name="output_virtual_network_subnet_id"></a> [virtual\_network\_subnet\_id](#output\_virtual\_network\_subnet\_id) | The subnet id which will be used by this Web App for [regional virtual network integration](https://docs.microsoft.com/en-us/azure/app-service/overview-vnet-integration#regional-virtual-network-integration). |
 | <a name="output_webdeploy_publish_basic_authentication_enabled"></a> [webdeploy\_publish\_basic\_authentication\_enabled](#output\_webdeploy\_publish\_basic\_authentication\_enabled) | Should the default WebDeploy Basic Authentication publishing credentials enabled. Defaults to `true`. |
 | <a name="output_zip_deploy_file"></a> [zip\_deploy\_file](#output\_zip\_deploy\_file) | The local path and filename of the Zip packaged application to deploy to this Windows Web App. **Note:** Using this value requires either `WEBSITE_RUN_FROM_PACKAGE=1` or `SCM_DO_BUILD_DURING_DEPLOYMENT=true` to be set on the App in `app_settings`. |

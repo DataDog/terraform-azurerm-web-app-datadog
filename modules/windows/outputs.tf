@@ -185,6 +185,13 @@ DESCRIPTION
   value       = azurerm_windows_web_app.this.virtual_network_backup_restore_enabled
 }
 
+output "virtual_network_image_pull_enabled" {
+  description = <<DESCRIPTION
+Whether traffic for the image pull should be routed over the virtual network.
+DESCRIPTION
+  value       = azurerm_windows_web_app.this.virtual_network_image_pull_enabled
+}
+
 output "virtual_network_subnet_id" {
   description = <<DESCRIPTION
 The subnet id which will be used by this Web App for [regional virtual network integration](https://docs.microsoft.com/en-us/azure/app-service/overview-vnet-integration#regional-virtual-network-integration).
