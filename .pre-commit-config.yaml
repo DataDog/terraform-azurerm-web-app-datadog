@@ -15,6 +15,7 @@ repos:
         types: [terraform]
       - id: terraform-docs
         name: regenerate terraform docs
-        entry: terraform-docs . --recursive --config .terraform-docs.yml --recursive-include-main=false && terraform-docs . --recursive --config .terraform-docs.yml --recursive-include-main=false --recursive-path=examples
+        pass_filenames: false
+        entry: bash -c 'terraform-docs . --recursive --config .terraform-docs.yml --recursive-include-main=false && terraform-docs . --recursive --config .terraform-docs.yml --recursive-include-main=false --recursive-path=examples'
         language: system
         types: [terraform]

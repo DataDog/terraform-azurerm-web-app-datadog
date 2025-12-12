@@ -75,7 +75,6 @@ locals {
     var.datadog_version != null ? { DD_VERSION = var.datadog_version } : {},
     local.is_dotnet ? {
       DD_DOTNET_TRACER_HOME    = "/home/site/wwwroot/datadog",
-      DD_TRACE_LOG_DIRECTORY   = "/home/LogFiles/dotnet",
       CORECLR_ENABLE_PROFILING = "1",
       CORECLR_PROFILER         = "{846F5F1C-F9AE-4B07-969E-05C26BC060D8}",
       CORECLR_PROFILER_PATH = (
