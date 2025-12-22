@@ -34,7 +34,7 @@ DESCRIPTION
 
 output "client_certificate_mode" {
   description = <<DESCRIPTION
-The Client Certificate mode. Possible values are `Required`, `Optional`, and `OptionalInteractiveUser`. This property has no effect when `client_cert_enabled` is `false`. Defaults to `Required`.
+The Client Certificate mode. Possible values are `Required`, `Optional`, and `OptionalInteractiveUser`. This property has no effect when `client_certificate_enabled` is `false`. Defaults to `Required`.
 DESCRIPTION
   value       = azurerm_windows_web_app.this.client_certificate_mode
 }
