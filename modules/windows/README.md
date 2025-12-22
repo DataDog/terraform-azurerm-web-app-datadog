@@ -110,7 +110,7 @@ module "windows_web_app_datadog" {
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.0 |
 | <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | >= 2.5.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 4.52.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 4.57.0 |
 
 ## Modules
 
@@ -134,7 +134,7 @@ No modules.
 | <a name="input_client_affinity_enabled"></a> [client\_affinity\_enabled](#input\_client\_affinity\_enabled) | Should Client Affinity be enabled? | `bool` | `null` | no |
 | <a name="input_client_certificate_enabled"></a> [client\_certificate\_enabled](#input\_client\_certificate\_enabled) | Should Client Certificates be enabled? | `bool` | `null` | no |
 | <a name="input_client_certificate_exclusion_paths"></a> [client\_certificate\_exclusion\_paths](#input\_client\_certificate\_exclusion\_paths) | Paths to exclude when using client certificates, separated by ; | `string` | `null` | no |
-| <a name="input_client_certificate_mode"></a> [client\_certificate\_mode](#input\_client\_certificate\_mode) | The Client Certificate mode. Possible values are `Required`, `Optional`, and `OptionalInteractiveUser`. This property has no effect when `client_cert_enabled` is `false`. Defaults to `Required`. | `string` | `null` | no |
+| <a name="input_client_certificate_mode"></a> [client\_certificate\_mode](#input\_client\_certificate\_mode) | The Client Certificate mode. Possible values are `Required`, `Optional`, and `OptionalInteractiveUser`. This property has no effect when `client_certificate_enabled` is `false`. Defaults to `Required`. | `string` | `null` | no |
 | <a name="input_connection_string"></a> [connection\_string](#input\_connection\_string) | One or more `connection_string` blocks as defined below. | <pre>set(object({<br/>    name  = string,<br/>    type  = string,<br/>    value = string<br/>  }))</pre> | `null` | no |
 | <a name="input_datadog_api_key"></a> [datadog\_api\_key](#input\_datadog\_api\_key) | Datadog API key | `string` | n/a | yes |
 | <a name="input_datadog_env"></a> [datadog\_env](#input\_datadog\_env) | Datadog Environment tag, used for Unified Service Tagging. | `string` | `null` | no |
@@ -173,7 +173,7 @@ No modules.
 | <a name="output_client_affinity_enabled"></a> [client\_affinity\_enabled](#output\_client\_affinity\_enabled) | Should Client Affinity be enabled? |
 | <a name="output_client_certificate_enabled"></a> [client\_certificate\_enabled](#output\_client\_certificate\_enabled) | Should Client Certificates be enabled? |
 | <a name="output_client_certificate_exclusion_paths"></a> [client\_certificate\_exclusion\_paths](#output\_client\_certificate\_exclusion\_paths) | Paths to exclude when using client certificates, separated by ; |
-| <a name="output_client_certificate_mode"></a> [client\_certificate\_mode](#output\_client\_certificate\_mode) | The Client Certificate mode. Possible values are `Required`, `Optional`, and `OptionalInteractiveUser`. This property has no effect when `client_cert_enabled` is `false`. Defaults to `Required`. |
+| <a name="output_client_certificate_mode"></a> [client\_certificate\_mode](#output\_client\_certificate\_mode) | The Client Certificate mode. Possible values are `Required`, `Optional`, and `OptionalInteractiveUser`. This property has no effect when `client_certificate_enabled` is `false`. Defaults to `Required`. |
 | <a name="output_connection_string"></a> [connection\_string](#output\_connection\_string) | One or more `connection_string` blocks as defined below. |
 | <a name="output_custom_domain_verification_id"></a> [custom\_domain\_verification\_id](#output\_custom\_domain\_verification\_id) | The identifier used by App Service to perform domain ownership verification via DNS TXT record. |
 | <a name="output_default_hostname"></a> [default\_hostname](#output\_default\_hostname) | The default hostname of the Windows Web App. |
