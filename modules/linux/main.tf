@@ -67,9 +67,10 @@ locals {
 
   app_settings = merge(
     {
-      DD_API_KEY = var.datadog_api_key
-      DD_SITE    = var.datadog_site
-      DD_SERVICE = local.datadog_service,
+      DD_API_KEY                          = var.datadog_api_key
+      DD_SITE                             = var.datadog_site
+      DD_SERVICE                          = local.datadog_service,
+      WEBSITES_ENABLE_APP_SERVICE_STORAGE = "true",
     },
     var.datadog_env != null ? { DD_ENV = var.datadog_env } : {},
     var.datadog_version != null ? { DD_VERSION = var.datadog_version } : {},
