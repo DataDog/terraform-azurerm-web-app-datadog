@@ -3,7 +3,7 @@
 
 # Local Definitions
 locals {
-  module_version      = "1.0.1"
+  module_version      = "1.0.2"
   is_container        = try(var.site_config.application_stack.docker_image_name, null) != null
   is_dotnet_container = coalesce(try(var.container_config.is_dotnet, null), false)
   is_musl_container   = coalesce(try(var.container_config.is_musl, null), false)
