@@ -6,10 +6,10 @@
         "start": "node index.js"
     },
     "dependencies": {
-        "body-parser": "2.2.0",
-        "cors": "^2.8.5",
-        "dd-trace": "^5.61.1",
-        "express": "5.1.0",
+        "body-parser": "2.2.2",
+        "cors": "^2.8.6",
+        "dd-trace": "^5.85.0",
+        "express": "5.2.1",
         "helmet": "8.1.0"
     },
     "engines": {
