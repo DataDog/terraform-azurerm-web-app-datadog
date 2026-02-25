@@ -1,3 +1,86 @@
+# Azure Linux Web App Slot with Node.js and Datadog Monitoring
+
+This example demonstrates how to deploy a Linux-based Azure Web App **deployment slot** running Node.js 22 LTS with Datadog monitoring enabled.
+
+## Overview
+
+This configuration creates:
+- An Azure Resource Group
+- An Azure App Service Plan (Linux, P1v2)
+- A parent Azure Web App configured for Node.js 22 LTS with Datadog monitoring
+- A "staging" deployment slot on the parent app with Datadog monitoring
+- Automated code deployment to the slot from local source
+
+## Prerequisites
+
+- Azure CLI installed and authenticated
+- Node.js installed
+- Terraform installed
+- A Datadog account with an API key
+- An Azure subscription
+
+## Required Variables
+
+Set the following variables in a `terraform.tfvars` file or via environment variables:
+
+```hcl
+subscription_id     = "your-azure-subscription-id"
+resource_group_name = "your-resource-group-name"
+name                = "your-app-name"
+location            = "eastus"  # or your preferred region
+datadog_api_key     = "your-datadog-api-key"
+datadog_site        = "datadoghq.com"  # or your Datadog site (e.g., datadoghq.eu)
+```
+
+## Usage
+
+1. Initialize Terraform:
+   ```bash
+   terraform init
+   ```
+
+2. Review the planned changes:
+   ```bash
+   terraform plan
+   ```
+
+3. Apply the configuration:
+   ```bash
+   terraform apply
+   ```
+
+The example includes a local code deployment step that packages and deploys the sample Node.js application (index.js and package.json) to the staging slot.
+
+## What Gets Deployed
+
+The example provisions a complete web application infrastructure with:
+- A parent Linux App Service running on P1v2 tier
+- A "staging" deployment slot with:
+  - Node.js 22 LTS runtime
+  - Datadog APM and monitoring with:
+    - Environment set to "dev"
+    - Service name "my-service"
+    - Version "1.0.0"
+    - Profiling enabled
+  - HTTPS-only access
+  - Build-on-deployment enabled for npm packages
+
+## Customization
+
+You can customize the deployment by modifying:
+- `datadog_env`, `datadog_service`, `datadog_version` for your environment
+- `app_settings` to enable additional Datadog features or application settings
+- `site_config.application_stack.node_version` for a different Node.js version
+- `tags` for additional resource tagging
+- Replace the `terraform_data.code_deployment` resource with your preferred CI/CD deployment method
+
+## Clean Up
+
+To destroy all resources created by this example:
+```bash
+terraform destroy
+```
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
