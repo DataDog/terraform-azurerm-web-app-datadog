@@ -31,10 +31,10 @@ locals {
 # workaround: https://github.com/hashicorp/terraform-provider-azurerm/issues/25167#issuecomment-2586756232
 resource "azapi_update_resource" "enable_sidecar" {
   count       = local.is_container ? 1 : 0 # only run if the app is containerized
-  type        = "Microsoft.Web/sites@2022-03-01"
-  resource_id = azurerm_linux_web_app.this.id
+  type        = "Microsoft.Web/sites/slots@2022-03-01"
+  resource_id = azurerm_linux_web_app_slot.this.id
   body        = { properties = { siteConfig = { linuxFxVersion = "SITECONTAINERS" } } }
-  lifecycle { replace_triggered_by = [azurerm_linux_web_app.this] }
+  lifecycle { replace_triggered_by = [azurerm_linux_web_app_slot.this] }
 }
 
 locals {
@@ -44,8 +44,8 @@ locals {
 resource "azapi_resource" "main_container" {
   count      = local.is_container ? 1 : 0 # only run if the app is containerized
   depends_on = [azapi_update_resource.enable_sidecar]
-  type       = "Microsoft.Web/sites/sitecontainers@2024-11-01"
-  parent_id  = azurerm_linux_web_app.this.id
+  type       = "Microsoft.Web/sites/slots/sitecontainers@2024-11-01"
+  parent_id  = azurerm_linux_web_app_slot.this.id
   name       = "main"
   # https://learn.microsoft.com/en-us/rest/api/appservice/web-apps/create-or-update-site-container?view=rest-appservice-2024-11-01#request-body
   body = {
@@ -96,8 +96,8 @@ locals {
 }
 
 resource "azapi_resource" "datadog_sidecar" {
-  type      = "Microsoft.Web/sites/sitecontainers@2024-11-01"
-  parent_id = azurerm_linux_web_app.this.id
+  type      = "Microsoft.Web/sites/slots/sitecontainers@2024-11-01"
+  parent_id = azurerm_linux_web_app_slot.this.id
   name      = local.sidecar_container_name
   body = { properties = {
     image      = local.sidecar_image
