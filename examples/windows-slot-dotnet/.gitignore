@@ -1,0 +1,77 @@
+# Build results
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Mono Auto Generated Files
+mono_crash.*
+
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# DotCover
+*.dotCover
+
+# NCrunch
+*.ncrunch*
+.*crunch*.local.xml
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# DotTrace
+*.dotTrace
+
+# Azure Pipelines
+*.azure-pipelines
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Logs
+*.log
+
+# Others
+*.vspscc
+*.vssscc
+*.dbmdl
+*.pdb
+*.cache
+*.config
+*.bak
+*.swp
+*.tmp
+*.sln.ide
+
+# Test Results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Publish
+publish/
+
+# Local secrets
+secrets.json
+appsettings.Development.json
+appsettings.Local.json
