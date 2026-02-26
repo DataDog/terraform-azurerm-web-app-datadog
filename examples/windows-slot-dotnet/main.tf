@@ -20,7 +20,7 @@ module "datadog_windows_web_app" {
   source          = "../../modules/windows"
   datadog_api_key = var.datadog_api_key
   datadog_site    = var.datadog_site
-  datadog_env     = "dev"
+  datadog_env     = "prod"
   datadog_service = "my-service"
   datadog_version = "1.0.0"
 
@@ -40,7 +40,7 @@ module "datadog_windows_web_app_slot" {
   source          = "../../modules/windows-slot"
   datadog_api_key = var.datadog_api_key
   datadog_site    = var.datadog_site
-  datadog_env     = "dev"
+  datadog_env     = "staging"
   datadog_service = "my-service"
   datadog_version = "1.0.0"
 
@@ -63,7 +63,7 @@ module "datadog_windows_web_app_slot" {
   }
 }
 
-resource "terraform_data" "code_deployment" { # Basic local deployment setup, replace with your actual deployment method in prod
+resource "terraform_data" "slot_code_deployment" { # Basic local deployment setup, replace with your actual deployment method in prod
   depends_on = [module.datadog_windows_web_app_slot]
   provisioner "local-exec" {
     command = <<EOT

@@ -4,6 +4,10 @@ Use [this Terraform module](https://registry.terraform.io/modules/DataDog/web-ap
 
 This module wraps the [azurerm_windows_web_app_slot](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_web_app_slot) resource and configures the Datadog extension using [azapi_resource](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource). It provides a simple interface to enable Datadog monitoring, Unified Service Tagging, and other best practices for observability on Azure App Service deployment slots (Windows).
 
+## Web App Slots Disclaimer
+
+There is a known issue where data from a slot looks the same as data coming in from the main web app, so we reccomend using the `datadog_env` variable to distinguish telemetry from the slot vs main web app.
+
 ## Usage
 
 ```hcl
