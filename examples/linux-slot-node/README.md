@@ -49,7 +49,7 @@ datadog_site        = "datadoghq.com"  # or your Datadog site (e.g., datadoghq.e
    terraform apply
    ```
 
-The example includes a local code deployment step that packages and deploys the sample Node.js application (index.js and package.json) to the staging slot.
+The example includes a local code deployment step that packages and deploys the sample Node.js application (index.js and package.json) to the staging slot. Note: we intentionally aren't deploying to the main web app since that isn't relevant to this example.
 
 ## What Gets Deployed
 
@@ -99,7 +99,7 @@ No requirements.
 |------|------|
 | [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) | resource |
 | [azurerm_service_plan.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) | resource |
-| [terraform_data.code_deployment](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| [terraform_data.slot_code_deployment](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 
 ## Inputs
 

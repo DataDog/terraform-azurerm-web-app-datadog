@@ -9,6 +9,10 @@ This module wraps the [azurerm_linux_web_app_slot](https://registry.terraform.io
 Unfortunately, since the `azurerm` does not provide support for Web App Sitecontainers, we instead use a workaround for containerized web apps to patch the web app slot after creation to add a sidecar once the slot is created. As such, if you are using containerized web apps (`site_config.application_stack.docker_*` variables), expect drift in the terraform state once the resource is created.
 
 
+## Web App Slots Disclaimer
+
+There is a known issue where data from a slot looks the same as data coming in from the main web app, so we reccomend using the `datadog_env` variable to distinguish telemetry from the slot vs main web app.
+
 ## Usage
 
 ```hcl
