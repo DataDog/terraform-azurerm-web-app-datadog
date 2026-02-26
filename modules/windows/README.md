@@ -1,8 +1,5 @@
 # Datadog Azure Windows Web App Terraform Module
 
-> **Technical Preview**: This module is in technical preview. While it is functional, we recommend validating it in your environment before widespread use.
-> If you encounter any issues, please open a GitHub issue to let us know.
-
 Use [this Terraform module](https://registry.terraform.io/modules/DataDog/web-app-datadog/azurerm/latest/submodules/windows) to deploy an Azure Windows Web App with integrated Datadog monitoring.
 
 This module wraps the [azurerm_windows_web_app](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_web_app) resource and configures the Datadog extension using [azapi_resource](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource). It provides a simple interface to enable Datadog monitoring, Unified Service Tagging, and other best practices for observability on Azure App Service (Windows).
