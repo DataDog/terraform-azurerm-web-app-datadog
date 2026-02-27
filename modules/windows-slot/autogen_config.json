@@ -1,0 +1,39 @@
+{
+    "$schema": "./autogen_config_schema.json",
+    "provider": "hashicorp/azurerm",
+    "resource": "azurerm_windows_web_app_slot",
+    "scrape_docs": true,
+    "fields": {
+        "impl": [
+            "app_settings",
+            "tags"
+        ],
+        "always_allow": [
+            "site_config.application_stack.current_stack",
+            "site_config.application_stack.dotnet_version",
+            "key_vault_reference_identity_id",
+            "zip_deploy_file"
+        ],
+        "never_allow": [
+            "site_config.application_stack.java_container",
+            "site_config.application_stack.java_container_version",
+            "site_config.application_stack.python",
+            "site_config.application_stack.tomcat_version",
+            "site_config.application_stack.docker_image_name",
+            "site_config.application_stack.docker_registry_password",
+            "site_config.application_stack.docker_registry_url",
+            "site_config.application_stack.docker_registry_username",
+            "site_config.application_stack.dotnet_core_version"
+        ],
+        "always_sensitive": [
+            "app_settings",
+            "site_config"
+        ]
+    },
+    "additional_providers": [
+        {
+            "name": "Azure/azapi",
+            "version": "2.5.0"
+        }
+    ]
+}

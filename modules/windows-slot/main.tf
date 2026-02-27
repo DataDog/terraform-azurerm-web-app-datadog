@@ -44,8 +44,7 @@ check "valid_runtime" {
 }
 
 resource "azapi_resource" "datadog_extension" {
-  type      = "Microsoft.Web/sites/siteextensions@2024-11-01"
-  parent_id = azurerm_windows_web_app.this.id
+  type      = "Microsoft.Web/sites/slots/siteextensions@2024-11-01"
+  parent_id = azurerm_windows_web_app_slot.this.id
   name      = local.datadog_extension_name
-  location  = var.location
 }
