@@ -1,0 +1,29 @@
+name: Module Version Consistency Check
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - 'modules/**/module_version.tf'
+
+jobs:
+  check-module-version:
+    name: Check Module Version Consistency
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Verify all modules share the same version
+        run: |
+          versions=$(grep -h 'module_version' modules/*/module_version.tf | sed 's/.*"\(.*\)".*/\1/' | sort -u)
+          count=$(echo "$versions" | wc -l | tr -d ' ')
+          if [ "$count" -ne 1 ]; then
+            echo "::error::module_version mismatch across submodules:"
+            grep -Hn 'module_version' modules/*/module_version.tf
+            exit 1
+          fi
+          echo "All modules have module_version = \"$versions\""
