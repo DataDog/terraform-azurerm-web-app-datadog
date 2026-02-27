@@ -37,6 +37,7 @@ module "datadog_windows_web_app" {
   app_settings = {                # additional app settings/features
     DD_PROFILING_ENABLED = "true" # example feature enablement
 
+    WEBSITE_NODE_DEFAULT_VERSION   = "~22"
     SCM_DO_BUILD_DURING_DEPLOYMENT = "true" # Required for local deployment below
   }
   tags = { # additional resource tags

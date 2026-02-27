@@ -3,7 +3,7 @@
 
 # Local Definitions
 locals {
-  module_version  = "1.0.1"
+  module_version  = "1.0.2"
   datadog_service = coalesce(var.datadog_service, var.name)
 }
 
