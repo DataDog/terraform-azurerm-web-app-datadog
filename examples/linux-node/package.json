@@ -8,7 +8,7 @@
     "dependencies": {
         "body-parser": "2.2.2",
         "cors": "^2.8.6",
-        "dd-trace": "^5.85.0",
+        "dd-trace": "^5.93.0",
         "express": "5.2.1",
         "helmet": "8.1.0"
     },
