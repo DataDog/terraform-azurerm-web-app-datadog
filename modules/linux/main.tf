@@ -22,7 +22,7 @@ check "container_has_config" {
 # Sidecar Logic/Installation
 locals {
   sidecar_container_name = "datadog-sidecar"
-  sidecar_image          = "index.docker.io/datadog/serverless-init:latest"
+  sidecar_image          = coalesce(try(var.container_config.sidecar_image, null), "index.docker.io/datadog/serverless-init:latest")
   sidecar_port           = "8126"
 }
 
