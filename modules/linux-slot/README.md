@@ -108,7 +108,7 @@ module "linux_web_app_slot_datadog" {
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.0 |
 | <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | >= 2.5.0 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 4.61.0 |
@@ -120,7 +120,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [azapi_resource.datadog_sidecar](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
 | [azapi_resource.main_container](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
 | [azapi_update_resource.enable_sidecar](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) | resource |
@@ -129,7 +129,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | <a name="input_app_service_id"></a> [app\_service\_id](#input\_app\_service\_id) | The ID of the Linux Web App this Deployment Slot will be part of. | `string` | n/a | yes |
 | <a name="input_app_settings"></a> [app\_settings](#input\_app\_settings) | A map of key-value pairs of App Settings. | `map(string)` | `null` | no |
 | <a name="input_auth_settings"></a> [auth\_settings](#input\_auth\_settings) | n/a | <pre>object({<br/>    additional_login_parameters   = optional(map(string)),<br/>    enabled                       = bool,<br/>    issuer                        = optional(string),<br/>    token_refresh_extension_hours = optional(number),<br/>    token_store_enabled           = optional(bool),<br/>    active_directory = optional(object({<br/>      allowed_audiences          = optional(list(string)),<br/>      client_id                  = string,<br/>      client_secret              = optional(string),<br/>      client_secret_setting_name = optional(string)<br/>    })),<br/>    facebook = optional(object({<br/>      app_id                  = string,<br/>      app_secret              = optional(string),<br/>      app_secret_setting_name = optional(string),<br/>      oauth_scopes            = optional(list(string))<br/>    })),<br/>    github = optional(object({<br/>      client_id                  = string,<br/>      client_secret              = optional(string),<br/>      client_secret_setting_name = optional(string),<br/>      oauth_scopes               = optional(list(string))<br/>    })),<br/>    google = optional(object({<br/>      client_id                  = string,<br/>      client_secret              = optional(string),<br/>      client_secret_setting_name = optional(string),<br/>      oauth_scopes               = optional(list(string))<br/>    })),<br/>    microsoft = optional(object({<br/>      client_id                  = string,<br/>      client_secret              = optional(string),<br/>      client_secret_setting_name = optional(string),<br/>      oauth_scopes               = optional(list(string))<br/>    })),<br/>    twitter = optional(object({<br/>      consumer_key                 = string,<br/>      consumer_secret              = optional(string),<br/>      consumer_secret_setting_name = optional(string)<br/>    }))<br/>  })</pre> | `null` | no |
@@ -169,7 +169,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | <a name="output_app_metadata"></a> [app\_metadata](#output\_app\_metadata) | A `app_metadata`. |
 | <a name="output_app_service_id"></a> [app\_service\_id](#output\_app\_service\_id) | The ID of the Linux Web App this Deployment Slot will be part of. |
 | <a name="output_app_settings"></a> [app\_settings](#output\_app\_settings) | A map of key-value pairs of App Settings. |
