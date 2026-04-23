@@ -48,12 +48,17 @@ variable "datadog_version" {
   description = "Datadog Version tag, used for Unified Service Tagging."
 }
 
+variable "sidecar_image" {
+  type        = string
+  default     = "index.docker.io/datadog/serverless-init:latest"
+  description = "Datadog sidecar container image."
+}
+
 variable "container_config" {
   type = object({
-    port          = string
-    is_dotnet     = optional(bool)
-    is_musl       = optional(bool)
-    sidecar_image = optional(string)
+    port      = string
+    is_dotnet = optional(bool)
+    is_musl   = optional(bool)
   })
   description = "Additional Configuration for containerized applications. This is required if the application is a container."
   default     = null
