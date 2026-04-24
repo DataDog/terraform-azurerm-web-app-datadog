@@ -48,6 +48,12 @@ variable "datadog_version" {
   description = "Datadog Version tag, used for Unified Service Tagging."
 }
 
+variable "sidecar_image" {
+  type        = string
+  default     = "index.docker.io/datadog/serverless-init:latest"
+  description = "Datadog sidecar container image. Override to pin a specific version tag or to use a mirrored image from a custom registry (e.g., ACR) to avoid pull rate limits."
+}
+
 variable "container_config" {
   type = object({
     port      = string
