@@ -1,2 +1,2 @@
-ddtrace==4.6.5
+ddtrace==4.6.8
 Flask==3.1.3
