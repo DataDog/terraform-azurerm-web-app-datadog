@@ -6,7 +6,8 @@
     "fields": {
         "impl": [
             "app_settings",
-            "tags"
+            "tags",
+            "sticky_settings"
         ],
         "always_allow": [
             "site_config.application_stack.current_stack",

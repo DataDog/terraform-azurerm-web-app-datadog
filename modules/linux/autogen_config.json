@@ -6,7 +6,8 @@
     "fields": {
         "impl": [
             "app_settings",
-            "tags"
+            "tags",
+            "sticky_settings"
         ],
         "always_allow": [
             "key_vault_reference_identity_id",
