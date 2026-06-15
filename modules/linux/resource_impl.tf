@@ -282,6 +282,7 @@ resource "azurerm_linux_web_app" "this" {
     load_balancing_mode                           = try(var.site_config.load_balancing_mode, null)
     local_mysql_enabled                           = try(var.site_config.local_mysql_enabled, null)
     managed_pipeline_mode                         = try(var.site_config.managed_pipeline_mode, null)
+    minimum_tls_cipher_suite                      = try(var.site_config.minimum_tls_cipher_suite, null)
     minimum_tls_version                           = try(var.site_config.minimum_tls_version, null)
     remote_debugging_enabled                      = try(var.site_config.remote_debugging_enabled, null)
     scm_ip_restriction_default_action             = try(var.site_config.scm_ip_restriction_default_action, null)
