@@ -367,6 +367,7 @@ variable "site_config" {
     load_balancing_mode                           = optional(string),
     local_mysql_enabled                           = optional(bool),
     managed_pipeline_mode                         = optional(string),
+    minimum_tls_cipher_suite                      = optional(string),
     minimum_tls_version                           = optional(string),
     remote_debugging_enabled                      = optional(bool),
     scm_ip_restriction_default_action             = optional(string),
