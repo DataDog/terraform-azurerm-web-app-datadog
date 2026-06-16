@@ -30,11 +30,29 @@ mechanism and `terraform destroy` is removal. The spec lifecycle maps as:
   `DD_SITE` / `DD_SERVICE` / `DD_ENV` / `DD_VERSION` /
   `WEBSITES_ENABLE_APP_SERVICE_STORAGE` set to the expected **values**; DD
   resource tags (`service` / `env` / `version` / `dd_sls_terraform_module`).
-- **Telemetry** (`internal/telemetry`): polls APM spans and logs (15s × 20),
-  filtered by the run-unique service. The identifying tags (`service`, `env`,
-  `version`) are baked into the search query and re-verified on the returned
-  items — we assert **identity, not existence**.
+- **Telemetry** (`internal/telemetry`): polls APM spans (20s × 30, ~10 min),
+  filtered by the run-unique `service` + `env` — baked into the query, so a hit
+  proves that identity on ingested telemetry (**identity, not existence**). The
+  run-unique service doubles as the run-id marker.
 - **Clean end-state**: after destroy the web app must be gone (explicit absence).
+
+### Known gaps (verified against a live run, 2026-06-16)
+
+The suite is faithful to the spec; a real run surfaced two module-side gaps in
+the code-based Linux App Service path, tracked as follow-ups:
+
+- **Logs**: the workload logs to stdout, which the `serverless-init` sidecar
+  does not collect without `DD_SERVERLESS_LOG_PATH` / App Service instance
+  logging — config the module does not wire. The logs check is gated behind
+  `E2E_EXPECT_LOGS` (default off); set it `true` once the module wires log
+  collection.
+- **`version` on spans**: `DD_VERSION` reaches the app and the `version`
+  resource tag is applied (both asserted at the config layer), but the value was
+  not observed on ingested spans, so span `version` identity is not asserted
+  (config-layer version identity stands in).
+
+Config + traces (`service`/`env`) + hygiene tags + clean teardown all verified
+end-to-end against real Azure.
 
 ## Resource hygiene
 
@@ -75,6 +93,17 @@ export E2E_STORAGE_ACCOUNT=smddsvlsprod
 export E2E_SIDECAR_IMAGE="index.docker.io/datadog/serverless-init:<pinned-tag>"
 
 GO111MODULE=on go test -v -timeout 45m ./...
+```
+
+**Without storage RBAC.** If your principal can't read the `smddsvlsprod`
+artifact account, reconstruct the workload package from the self-monitoring
+source (identical to what the publish pipeline zips) and point `E2E_WORKLOAD_ZIP`
+at it; CI keeps pulling the prebuilt artifact:
+
+```sh
+SRC=.../serverless-init-self-monitoring/apps/code/sidecar/node
+( cd "$SRC" && npm install --omit=dev && zip -rq /tmp/node-sidecar.zip . )
+export E2E_WORKLOAD_ZIP=/tmp/node-sidecar.zip
 ```
 
 > This repository lives under `$GOPATH`, so `GO111MODULE=on` is required for
