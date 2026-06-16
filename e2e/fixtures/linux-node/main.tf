@@ -40,6 +40,10 @@ module "datadog_linux_web_app" {
   https_only          = true
 
   site_config = {
+    # The prebuilt workload package needs an explicit startup command to boot on
+    # a Linux Web App (the published self-monitoring template sets the same).
+    # This is workload startup config, not part of the module's instrumentation.
+    app_command_line = "npm start"
     application_stack = {
       node_version = "22-lts"
     }
