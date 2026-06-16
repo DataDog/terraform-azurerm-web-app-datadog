@@ -45,5 +45,12 @@ module "datadog_linux_web_app" {
     }
   }
 
+  # SCM build runs Oryx on the deployed package (installs deps for the Linux
+  # host + generates the startup manifest) so the worker starts. Matches the
+  # repo's linux-node example; without it the zip-deployed worker fails to boot.
+  app_settings = {
+    SCM_DO_BUILD_DURING_DEPLOYMENT = "true"
+  }
+
   tags = var.tags
 }
