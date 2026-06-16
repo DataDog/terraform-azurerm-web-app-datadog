@@ -10,6 +10,11 @@ resource "azurerm_resource_group" "this" {
   name     = var.resource_group_name
   location = var.location
   tags     = var.tags
+  # A subscription policy auto-stamps a `creator` tag on created resources;
+  # ignore it so re-apply stays a no-op (the module itself is idempotent).
+  lifecycle {
+    ignore_changes = [tags["creator"]]
+  }
 }
 
 resource "azurerm_service_plan" "this" {
@@ -19,6 +24,9 @@ resource "azurerm_service_plan" "this" {
   os_type             = "Linux"
   sku_name            = "P1v2"
   tags                = var.tags
+  lifecycle {
+    ignore_changes = [tags["creator"]]
+  }
 }
 
 # The module under test. Wrapping the web app is the instrumentation mechanism:
