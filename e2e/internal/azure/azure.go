@@ -127,6 +127,15 @@ func (c *Client) DeployPrebuiltPackage(ctx context.Context, rg, app, storageAcco
 		return fmt.Errorf("download prebuilt package %s/%s: %w", storageAccount, blobName, err)
 	}
 
+	return c.DeployLocalZip(ctx, rg, app, zipPath)
+}
+
+// DeployLocalZip zip-deploys an already-local workload package. CI uses
+// DeployPrebuiltPackage (pulls the published artifact); this is the local
+// escape hatch for developers without storage RBAC on the artifact account,
+// who can point E2E_WORKLOAD_ZIP at a package reconstructed from the
+// self-monitoring source.
+func (c *Client) DeployLocalZip(ctx context.Context, rg, app, zipPath string) error {
 	// Deploy can take a while; give it a generous attempt budget.
 	if _, err := exec.RunWithRetries(ctx, exec.Options{MaxAttempts: 4, DelaySeconds: 15}, "az", "webapp", "deploy",
 		"--subscription", c.SubscriptionID, "--resource-group", rg, "--name", app,
