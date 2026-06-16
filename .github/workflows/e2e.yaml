@@ -54,9 +54,12 @@ jobs:
       contents: read
       id-token: write # required for Azure OIDC federation
     env:
-      # Skip the suite entirely when no relevant files changed; the test also
-      # honors this flag so a green check is recorded either way.
-      SKIP_AAS_TESTS: ${{ needs.changes.outputs.should_run != 'true' }}
+      # Skip the cloud lifecycle when no relevant files changed OR when the
+      # Azure OIDC federation isn't configured on this repo (e.g. forks, or
+      # before an admin wires the e2e vars/secrets). The test honors this flag
+      # and skips green; unit tests still run. The real lifecycle runs once
+      # AZURE_CLIENT_ID_E2E is set. This is the spec's SKIP_* gating.
+      SKIP_AAS_TESTS: ${{ needs.changes.outputs.should_run != 'true' || vars.AZURE_CLIENT_ID_E2E == '' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -73,7 +76,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Azure login (OIDC)
-        if: needs.changes.outputs.should_run == 'true'
+        if: needs.changes.outputs.should_run == 'true' && vars.AZURE_CLIENT_ID_E2E != ''
         uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID_E2E }}
