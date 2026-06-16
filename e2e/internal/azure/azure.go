@@ -127,6 +127,8 @@ func (c *Client) DeployPrebuiltPackage(ctx context.Context, rg, app, storageAcco
 		return fmt.Errorf("download prebuilt package %s/%s: %w", storageAccount, blobName, err)
 	}
 
+	// The published package bundles node_modules, so it runs as-is on the Linux
+	// Web App without an SCM/Oryx build (which conflicts with bundled deps).
 	return c.DeployLocalZip(ctx, rg, app, zipPath)
 }
 
@@ -136,8 +138,10 @@ func (c *Client) DeployPrebuiltPackage(ctx context.Context, rg, app, storageAcco
 // who can point E2E_WORKLOAD_ZIP at a package reconstructed from the
 // self-monitoring source.
 func (c *Client) DeployLocalZip(ctx context.Context, rg, app, zipPath string) error {
-	// Deploy can take a while; give it a generous attempt budget.
-	if _, err := exec.RunWithRetries(ctx, exec.Options{MaxAttempts: 4, DelaySeconds: 15}, "az", "webapp", "deploy",
+	// A source-only deploy + SCM build completes in a few minutes; 2 attempts is
+	// enough and avoids long hangs if the worker can't start (each az deploy can
+	// itself wait ~10 min for worker startup before erroring).
+	if _, err := exec.RunWithRetries(ctx, exec.Options{MaxAttempts: 2, DelaySeconds: 15}, "az", "webapp", "deploy",
 		"--subscription", c.SubscriptionID, "--resource-group", rg, "--name", app,
 		"--src-path", zipPath, "--type", "zip", "--async", "false", "--output", "none"); err != nil {
 		return fmt.Errorf("zip-deploy workload: %w", err)
