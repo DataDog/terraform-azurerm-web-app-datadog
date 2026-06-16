@@ -87,7 +87,12 @@ Set `SKIP_AAS_TESTS=true` to skip (the test records a green skip).
 `.github/workflows/e2e.yaml` runs the suite on PRs/pushes that touch
 `modules/**` or `e2e/**`, gated by a `dorny/paths-filter` job that drives
 `SKIP_AAS_TESTS`. Auth is GitHub → Azure **OIDC federation** (`azure/login` +
-`ARM_USE_OIDC`); no long-lived credentials. Required repo config:
+`ARM_USE_OIDC`); no long-lived credentials.
+
+Until the OIDC federation and e2e vars/secrets below are configured, the job
+green-skips the cloud lifecycle (it still compiles the suite and runs the unit
+tests). It runs the real lifecycle automatically once `AZURE_CLIENT_ID_E2E` is
+set. Required repo config:
 
 | Kind   | Name                                                    | Purpose                       |
 | ------ | ------------------------------------------------------- | ----------------------------- |
