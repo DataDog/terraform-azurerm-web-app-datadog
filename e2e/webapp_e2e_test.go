@@ -143,7 +143,7 @@ func triggerWorkload(t *testing.T, hostname string) {
 	url := fmt.Sprintf("https://%s/", hostname)
 	client := &http.Client{Timeout: 30 * time.Second}
 
-	const maxAttempts = 20
+	const maxAttempts = 40 // ~10 min; the deploy no longer gates on worker start
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
 		resp, err := client.Get(url)
 		if err == nil {

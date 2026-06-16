@@ -138,12 +138,13 @@ func (c *Client) DeployPrebuiltPackage(ctx context.Context, rg, app, storageAcco
 // who can point E2E_WORKLOAD_ZIP at a package reconstructed from the
 // self-monitoring source.
 func (c *Client) DeployLocalZip(ctx context.Context, rg, app, zipPath string) error {
-	// A source-only deploy + SCM build completes in a few minutes; 2 attempts is
-	// enough and avoids long hangs if the worker can't start (each az deploy can
-	// itself wait ~10 min for worker startup before erroring).
+	// --track-status false pushes the package without gating on the runtime
+	// worker-startup poll: under load that poll falsely times out even when the
+	// worker comes up fine. The HTTP trigger that follows is the real
+	// worker-started signal, so we don't need az to confirm it here.
 	if _, err := exec.RunWithRetries(ctx, exec.Options{MaxAttempts: 2, DelaySeconds: 15}, "az", "webapp", "deploy",
 		"--subscription", c.SubscriptionID, "--resource-group", rg, "--name", app,
-		"--src-path", zipPath, "--type", "zip", "--async", "false", "--output", "none"); err != nil {
+		"--src-path", zipPath, "--type", "zip", "--track-status", "false", "--async", "false", "--output", "none"); err != nil {
 		return fmt.Errorf("zip-deploy workload: %w", err)
 	}
 	return nil
