@@ -90,6 +90,22 @@ func TestLinuxNodeWebAppE2E(t *testing.T) {
 		EnvVars: map[string]string{"ARM_SUBSCRIPTION_ID": subscriptionID},
 		NoColor: true,
 	})
+	// Retry the cloud, not the assertions: App Service control-plane returns
+	// transient 409s ("another operation is in progress") and 429 throttling
+	// under load. Add them to the default retryable set so apply/destroy ride
+	// through instead of failing the run.
+	for re, msg := range map[string]string{
+		"another operation is in progress":    "App Service operation in progress; retrying.",
+		"Cannot modify this web hosting plan": "App Service plan busy; retrying.",
+		"AnotherOperationInProgress":          "Concurrent operation; retrying.",
+		"(?s)429.*(TooManyRequests|Throttl)":  "ARM throttling; retrying.",
+		"(?s)unexpected status 409":           "ARM 409 conflict; retrying.",
+		"RetryableError":                      "Retryable cloud error; retrying.",
+	} {
+		tfOpts.RetryableTerraformErrors[re] = msg
+	}
+	tfOpts.MaxRetries = 6
+	tfOpts.TimeBetweenRetries = 30 * time.Second
 
 	// REMOVE + verify CLEAN end-state. Teardown always runs, even on failure.
 	defer func() {
