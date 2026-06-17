@@ -104,6 +104,8 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID_E2E }}
           # Datadog
           DD_SITE: ${{ vars.DD_SITE_E2E || 'datadoghq.com' }}
+          # Datadog: key wired into the workload by the module
+          DD_API_KEY: ${{ steps.dd-sts.outputs.api_key }}
           # Datadog: keys used to query the API for telemetry
           DATADOG_API_KEY: ${{ steps.dd-sts.outputs.api_key }}
           DATADOG_APP_KEY: ${{ steps.dd-sts.outputs.app_key }}
