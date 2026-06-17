@@ -84,6 +84,15 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID_E2E }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID_E2E }}
 
+      # Short-lived Datadog API + App keys via OIDC federation (dd-sts), governed by
+      # the policy in dd-source. No static Datadog keys are stored in this repo.
+      - name: Get Datadog credentials (dd-sts)
+        id: dd-sts
+        if: needs.changes.outputs.should_run == 'true' && vars.AZURE_CLIENT_ID_E2E != ''
+        uses: DataDog/dd-sts-action@2e8187910199bd93129520183c093e19aa585c75 # v1.0.0
+        with:
+          policy: terraform-azurerm-web-app-datadog-e2e
+
       - name: Run e2e suite
         working-directory: e2e
         run: go test -v -timeout 45m ./...
@@ -95,12 +104,11 @@ jobs:
           ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID_E2E }}
           ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID_E2E }}
           ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID_E2E }}
-          # Datadog: key wired into the workload by the module
-          DD_API_KEY: ${{ secrets.DD_API_KEY_E2E }}
-          DD_SITE: ${{ vars.DD_SITE_E2E }}
+          # Datadog
+          DD_SITE: ${{ vars.DD_SITE_E2E || 'datadoghq.com' }}
           # Datadog: keys used to query the API for telemetry
-          DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY_E2E }}
-          DATADOG_APP_KEY: ${{ secrets.DATADOG_APP_KEY_E2E }}
+          DATADOG_API_KEY: ${{ steps.dd-sts.outputs.api_key }}
+          DATADOG_APP_KEY: ${{ steps.dd-sts.outputs.app_key }}
           # Workload artifact + pinned sidecar
           E2E_STORAGE_ACCOUNT: ${{ vars.E2E_STORAGE_ACCOUNT }}
           E2E_SIDECAR_IMAGE: ${{ vars.E2E_SIDECAR_IMAGE }}
