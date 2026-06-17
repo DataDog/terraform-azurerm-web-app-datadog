@@ -55,12 +55,10 @@ jobs:
       contents: read
       id-token: write # required for Azure OIDC federation
     env:
-      # Skip the cloud lifecycle when no relevant files changed OR when the
-      # Azure OIDC federation isn't configured on this repo (e.g. forks, or
-      # before an admin wires the e2e vars/secrets). The test honors this flag
-      # and skips green; unit tests still run. The real lifecycle runs once
-      # AZURE_CLIENT_ID_E2E is set. This is the spec's SKIP_* gating.
-      SKIP_AAS_TESTS: ${{ needs.changes.outputs.should_run != 'true' || vars.AZURE_CLIENT_ID_E2E == '' }}
+      # Skip the cloud lifecycle only when no relevant files changed; unit tests
+      # still run. When relevant files change the lifecycle runs for real and the
+      # Azure OIDC / dd-sts steps must succeed -- an auth failure fails the job.
+      SKIP_AAS_TESTS: ${{ needs.changes.outputs.should_run != 'true' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -77,7 +75,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Azure login (OIDC)
-        if: needs.changes.outputs.should_run == 'true' && vars.AZURE_CLIENT_ID_E2E != ''
+        if: needs.changes.outputs.should_run == 'true'
         uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID_E2E }}
@@ -88,7 +86,7 @@ jobs:
       # the policy in dd-source. No static Datadog keys are stored in this repo.
       - name: Get Datadog credentials (dd-sts)
         id: dd-sts
-        if: needs.changes.outputs.should_run == 'true' && vars.AZURE_CLIENT_ID_E2E != ''
+        if: needs.changes.outputs.should_run == 'true'
         uses: DataDog/dd-sts-action@2e8187910199bd93129520183c093e19aa585c75 # v1.0.0
         with:
           policy: terraform-azurerm-web-app-datadog-e2e
