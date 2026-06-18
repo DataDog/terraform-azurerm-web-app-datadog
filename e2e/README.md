@@ -77,22 +77,26 @@ Prerequisites:
 - **Azure auth**: `az login` to a subscription that can create resource groups,
   app service plans, Linux Web Apps, and **read** the `smddsvlsprod` storage
   account's `code` container (Storage Blob Data Reader).
-- **Datadog**: an API key (wired into the app) and an API+APP key pair (to query
-  telemetry). The org must be the one the keys belong to.
+- **Datadog**: `dd-auth` mints short-lived keys for the org -- no pasted keys. It
+  injects `$DD_API_KEY` (also the key wired into the workload) and `$DD_APP_KEY`
+  into the wrapped command, which the suite maps to `DATADOG_API_KEY` /
+  `DATADOG_APP_KEY` for telemetry queries.
 
 ```sh
 cd e2e
 
 export AZURE_SUBSCRIPTION_ID="$(az account show --query id -o tsv)"
-export DD_API_KEY=...          # wired into the workload by the module
 export DD_SITE=datadoghq.com
-export DATADOG_API_KEY=...     # used to query the Datadog API
-export DATADOG_APP_KEY=...
 # optional overrides
 export E2E_STORAGE_ACCOUNT=smddsvlsprod
 export E2E_SIDECAR_IMAGE="index.docker.io/datadog/serverless-init:<pinned-tag>"
 
-GO111MODULE=on go test -v -timeout 45m ./...
+# Datadog auth: dd-auth mints short-lived keys for the org -- no pasted keys.
+# It injects $DD_API_KEY (also the workload key) and $DD_APP_KEY into the wrapped command.
+dd-auth --domain app.datadoghq.com -- bash -c '
+  export DATADOG_API_KEY="$DD_API_KEY" DATADOG_APP_KEY="$DD_APP_KEY"
+  GO111MODULE=on go test -v -timeout 45m ./...
+'
 ```
 
 **Without storage RBAC.** If your principal can't read the `smddsvlsprod`
