@@ -1,7 +1,8 @@
 // Package azure wraps the `az` CLI for the resource inspection and workload
 // deployment the e2e suite needs. It mirrors how the datadog-ci reference impl
 // shells out to the cloud CLI (gcloud / az) and parses JSON, rather than
-// pulling in a heavy SDK. All calls go through the bounded-retry exec helper.
+// pulling in a heavy SDK. All calls go through the shared bounded-retry exec
+// helper (e2eshared.Run/RunWithRetries).
 package azure
 
 import (
@@ -11,9 +12,39 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
-	"github.com/DataDog/terraform-azurerm-web-app-datadog/e2e/internal/exec"
+	e2eshared "github.com/DataDog/terraform-azurerm-web-app-datadog/e2e/shared"
 )
+
+// sharedCfg parameterizes the shared exec/retry helper for this module: the `az`
+// CLI plus the Azure control-plane transient-error substrings safe to retry.
+// RunIDTagKey pins the run-id tag the cross-repo sweeper already keys on for
+// this repo (one_e2e_runid), preserving its existing hygiene convention.
+var sharedCfg = e2eshared.Config{
+	Tool:        "tfwebapp",
+	Platform:    "linux",
+	Command:     "az",
+	RunIDTagKey: "one_e2e_runid",
+	RetryPatterns: []string{
+		"GatewayTimeout",
+		"RestError",
+		"Operation was canceled",
+		"ETIMEDOUT",
+		"ECONNRESET",
+		"doesn't exist",
+		"Conflict",
+		"TooManyRequests",
+		"ABORTED",
+		"DEADLINE_EXCEEDED",
+		"INTERNAL",
+		"RESOURCE_EXHAUSTED",
+		"UNAVAILABLE",
+		"temporarily unavailable",
+		"AnotherOperationInProgress",
+		"ServiceUnavailable",
+	},
+}
 
 // Client targets a single subscription.
 type Client struct {
@@ -26,7 +57,7 @@ func New(subscriptionID string) *Client {
 
 // AppSettings returns the web app's application settings as a name->value map.
 func (c *Client) AppSettings(ctx context.Context, rg, app string) (map[string]string, error) {
-	res, err := exec.RunWithRetries(ctx, exec.Options{}, "az", "webapp", "config", "appsettings", "list",
+	res, err := e2eshared.RunWithRetries(ctx, sharedCfg, 3, 5*time.Second, "webapp", "config", "appsettings", "list",
 		"--subscription", c.SubscriptionID, "--resource-group", rg, "--name", app, "--output", "json")
 	if err != nil {
 		return nil, err
@@ -62,7 +93,7 @@ func (c *Client) SiteContainers(ctx context.Context, rg, app string) ([]SiteCont
 	url := fmt.Sprintf(
 		"/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Web/sites/%s/sitecontainers?api-version=2024-11-01",
 		c.SubscriptionID, rg, app)
-	res, err := exec.RunWithRetries(ctx, exec.Options{}, "az", "rest", "--method", "get", "--url", url, "--output", "json")
+	res, err := e2eshared.RunWithRetries(ctx, sharedCfg, 3, 5*time.Second, "rest", "--method", "get", "--url", url, "--output", "json")
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +108,7 @@ func (c *Client) SiteContainers(ctx context.Context, rg, app string) ([]SiteCont
 
 // Tags returns the web app's resource tags.
 func (c *Client) Tags(ctx context.Context, rg, app string) (map[string]string, error) {
-	res, err := exec.RunWithRetries(ctx, exec.Options{}, "az", "webapp", "show",
+	res, err := e2eshared.RunWithRetries(ctx, sharedCfg, 3, 5*time.Second, "webapp", "show",
 		"--subscription", c.SubscriptionID, "--resource-group", rg, "--name", app, "--output", "json")
 	if err != nil {
 		return nil, err
@@ -97,7 +128,9 @@ func (c *Client) Tags(ctx context.Context, rg, app string) (map[string]string, e
 // WebAppExists reports whether the web app still exists. Used to assert the
 // clean end-state after REMOVE.
 func (c *Client) WebAppExists(ctx context.Context, rg, app string) (bool, error) {
-	res := exec.Run(ctx, nil, "az", "webapp", "show",
+	// A non-zero exit is expected post-destroy, so we inspect the Result rather
+	// than treating the returned error as fatal.
+	res, _ := e2eshared.Run(ctx, sharedCfg, "webapp", "show",
 		"--subscription", c.SubscriptionID, "--resource-group", rg, "--name", app, "--output", "json")
 	if res.ExitCode == 0 {
 		return true, nil
@@ -121,7 +154,7 @@ func (c *Client) DeployPrebuiltPackage(ctx context.Context, rg, app, storageAcco
 	defer os.RemoveAll(dir)
 	zipPath := filepath.Join(dir, blobName)
 
-	if _, err := exec.RunWithRetries(ctx, exec.Options{}, "az", "storage", "blob", "download",
+	if _, err := e2eshared.RunWithRetries(ctx, sharedCfg, 3, 5*time.Second, "storage", "blob", "download",
 		"--account-name", storageAccount, "--container-name", "code", "--name", blobName,
 		"--file", zipPath, "--auth-mode", "login", "--no-progress", "--output", "none"); err != nil {
 		return fmt.Errorf("download prebuilt package %s/%s: %w", storageAccount, blobName, err)
@@ -142,7 +175,7 @@ func (c *Client) DeployLocalZip(ctx context.Context, rg, app, zipPath string) er
 	// worker-startup poll: under load that poll falsely times out even when the
 	// worker comes up fine. The HTTP trigger that follows is the real
 	// worker-started signal, so we don't need az to confirm it here.
-	if _, err := exec.RunWithRetries(ctx, exec.Options{MaxAttempts: 2, DelaySeconds: 15}, "az", "webapp", "deploy",
+	if _, err := e2eshared.RunWithRetries(ctx, sharedCfg, 2, 15*time.Second, "webapp", "deploy",
 		"--subscription", c.SubscriptionID, "--resource-group", rg, "--name", app,
 		"--src-path", zipPath, "--type", "zip", "--track-status", "false", "--async", "false", "--output", "none"); err != nil {
 		return fmt.Errorf("zip-deploy workload: %w", err)

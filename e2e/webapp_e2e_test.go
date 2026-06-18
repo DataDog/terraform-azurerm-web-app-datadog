@@ -26,10 +26,19 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/DataDog/terraform-azurerm-web-app-datadog/e2e/internal/azure"
-	"github.com/DataDog/terraform-azurerm-web-app-datadog/e2e/internal/naming"
 	"github.com/DataDog/terraform-azurerm-web-app-datadog/e2e/internal/telemetry"
 	"github.com/DataDog/terraform-azurerm-web-app-datadog/e2e/internal/verify"
+	e2eshared "github.com/DataDog/terraform-azurerm-web-app-datadog/e2e/shared"
 )
+
+// sharedCfg parameterizes the shared naming/tag helpers for this module: the
+// tool/platform identity that forms the sweeper name prefix, and the run-id tag
+// key the cross-repo sweeper already keys on for this repo (one_e2e_runid).
+var sharedCfg = e2eshared.Config{
+	Tool:        "tfwebapp",
+	Platform:    "linux",
+	RunIDTagKey: "one_e2e_runid",
+}
 
 const (
 	fixtureDir = "fixtures/linux-node"
@@ -63,11 +72,13 @@ func TestLinuxNodeWebAppE2E(t *testing.T) {
 	storageAccount := envOr("E2E_STORAGE_ACCOUNT", defaultStorageAccount)
 	sidecarImage := envOr("E2E_SIDECAR_IMAGE", defaultSidecarImage)
 
-	runID := naming.NewRunID()
+	runID := e2eshared.NewRunID()
 	created := time.Now().Unix()
-	appName := naming.WebAppName(runID)
-	rgName := naming.ResourceGroupName(runID)
-	service := appName // run-unique service => telemetry is filterable by run id
+	// one-e2e-tfwebapp-linux-<runid>: globally-unique, DNS-valid, well under the
+	// 60-char Web App budget; the prefix is the sweeper's blast-radius guard.
+	appName := e2eshared.ResourceName(sharedCfg, runID)
+	rgName := appName + "-rg" // run-scoped group shares the sweeper prefix
+	service := appName        // run-unique service => telemetry is filterable by run id
 
 	ctx := context.Background()
 	az := azure.New(subscriptionID)
@@ -85,7 +96,7 @@ func TestLinuxNodeWebAppE2E(t *testing.T) {
 			"name":                appName,
 			"resource_group_name": rgName,
 			"location":            location,
-			"tags":                naming.Tags(runID, created),
+			"tags":                e2eshared.Tags(sharedCfg, runID, created),
 		},
 		EnvVars: map[string]string{"ARM_SUBSCRIPTION_ID": subscriptionID},
 		NoColor: true,
