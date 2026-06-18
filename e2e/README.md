@@ -30,34 +30,34 @@ mechanism and `terraform destroy` is removal. The spec lifecycle maps as:
   `DD_SITE` / `DD_SERVICE` / `DD_ENV` / `DD_VERSION` /
   `WEBSITES_ENABLE_APP_SERVICE_STORAGE` set to the expected **values**; DD
   resource tags (`service` / `env` / `version` / `dd_sls_terraform_module`).
-- **Telemetry** (`internal/telemetry`): polls APM spans (20s × 30, ~10 min),
-  filtered by the run-unique `service` + `env` — baked into the query, so a hit
-  proves that identity on ingested telemetry (**identity, not existence**). The
-  run-unique service doubles as the run-id marker.
+- **Telemetry** (`internal/telemetry`): polls APM spans and logs (20s × 30,
+  ~10 min), filtered by the run-unique `service` + `env` — baked into the query,
+  so a hit proves that identity on ingested telemetry (**identity, not
+  existence**). The run-unique service doubles as the run-id marker. The workload
+  logs to stdout, which Linux App Service writes to a per-instance file on the
+  `/home` volume shared with the sidecar; the fixture sets
+  `DD_AAS_INSTANCE_LOGGING_ENABLED` so `serverless-init` tails it, and the suite
+  drives continuous traffic during the poll so the end-tailer always has fresh
+  lines. Logs are therefore required alongside traces.
 - **Clean end-state**: after destroy the web app must be gone (explicit absence).
+
+### Scope
+
+- **Linux only.** Windows App Service has no `serverless-init` log support, so it
+  is not tested here. A Windows suite is a separate follow-up; it would reuse
+  `Options.ExpectLogs: false` (traces only).
 
 ### Known gaps (verified against a live run, 2026-06-16)
 
-The suite is faithful to the spec; a real run surfaced two module-side gaps in
-the code-based Linux App Service path, tracked as follow-ups:
-
-- **Logs**: the workload logs to stdout, which the `serverless-init` sidecar
-  does not collect without `DD_SERVERLESS_LOG_PATH` / App Service instance
-  logging — config the module does not wire. The logs check is gated behind
-  `E2E_EXPECT_LOGS` (default off); set it `true` once the module wires log
-  collection.
 - **`version` on spans**: `DD_VERSION` reaches the app and the `version`
   resource tag is applied (both asserted at the config layer), but the value was
   not observed on ingested spans, so span `version` identity is not asserted
   (config-layer version identity stands in).
 
-Config + traces (`service`/`env`) + hygiene tags + clean teardown all verified
-end-to-end against real Azure.
-
 ## Resource hygiene
 
 Every resource is created with name prefix `one-e2e-tfwebapp-linux-<runid>` and a
-`one_e2e_created:<unix-ts>` freshness tag plus a `one_e2e_runid` marker, set
+`one_e2e_created:<unix-ts>` freshness tag plus a `one_e2e_run_id` marker, set
 atomically at creation (`internal/naming`). This is the identity the cross-repo
 sweeper keys on. Artifact versions (sidecar image) are pinned so a failure
 blames the module, not upstream.
