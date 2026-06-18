@@ -32,12 +32,12 @@ import (
 )
 
 // sharedCfg parameterizes the shared naming/tag helpers for this module: the
-// tool/platform identity that forms the sweeper name prefix, and the run-id tag
-// key the cross-repo sweeper already keys on for this repo (one_e2e_runid).
+// tool/platform identity that forms the sweeper name prefix. The run-id tag uses
+// the shared default (one_e2e_run_id), matching the other e2e suites and the
+// cross-repo serverless-e2e index.
 var sharedCfg = e2eshared.Config{
-	Tool:        "tfwebapp",
-	Platform:    "linux",
-	RunIDTagKey: "one_e2e_runid",
+	Tool:     "tfwebapp",
+	Platform: "linux",
 }
 
 const (
@@ -97,6 +97,11 @@ func TestLinuxNodeWebAppE2E(t *testing.T) {
 			"resource_group_name": rgName,
 			"location":            location,
 			"tags":                e2eshared.Tags(sharedCfg, runID, created),
+			// DD_TAGS stamps the standard run-id marker onto ingested telemetry so
+			// the shared serverless-e2e index (filtered on one_e2e_run_id:*) captures
+			// this run's spans and logs; the run-unique service makes telemetry
+			// filterable per run on top of that.
+			"datadog_tags": e2eshared.DefaultRunIDTagKey + ":" + runID,
 		},
 		EnvVars: map[string]string{"ARM_SUBSCRIPTION_ID": subscriptionID},
 		NoColor: true,
@@ -149,13 +154,24 @@ func TestLinuxNodeWebAppE2E(t *testing.T) {
 	hostname := terraform.Output(t, tfOpts, "default_hostname")
 	triggerWorkload(t, hostname)
 
-	// verify TELEMETRY: traces filtered by the run-unique service + env identity.
-	// Logs are gated behind E2E_EXPECT_LOGS while the code-based App Service log
-	// collection gap is open (see telemetry package KNOWN GAPS).
+	// Drive continuous traffic for the duration of the telemetry poll. The
+	// serverless-init sidecar tails Azure's per-instance stdout log file from the
+	// END, so lines written before its tailer attached sit behind the offset.
+	// Without fresh requests during the poll no new lines are forwarded and logs
+	// never arrive (spans are unaffected -- the tracer ships over HTTP). Stopped
+	// once the poll returns.
+	tctx, stopTraffic := context.WithCancel(ctx)
+	defer stopTraffic()
+	go e2eshared.GenerateTraffic(tctx, "https://"+hostname, 5*time.Second)
+
+	// verify TELEMETRY: traces and logs filtered by the run-unique service + env
+	// identity. Logs are now collected end-to-end (the workload's stdout is tailed
+	// via DD_AAS_INSTANCE_LOGGING_ENABLED; see the fixture), so they are required
+	// alongside traces.
 	require.NoError(t, telemetry.CheckTelemetryFlowing(ctx,
 		telemetry.Config{APIKey: telAPIKey, AppKey: telAppKey, Site: ddSite},
 		telemetry.Expected{Service: service, Env: ddEnv},
-		telemetry.Options{ExpectLogs: os.Getenv("E2E_EXPECT_LOGS") == "true"}))
+		telemetry.Options{ExpectLogs: true}))
 
 	// re-APPLY idempotent: a fresh plan must report no changes.
 	exitCode := terraform.PlanExitCode(t, tfOpts)

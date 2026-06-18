@@ -62,3 +62,11 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
+
+# DD_TAGS value stamped onto ingested telemetry (comma-separated key:value
+# pairs). The harness sets the standard run-id marker (one_e2e_run_id:<runid>)
+# so the shared serverless-e2e index captures this run's spans and logs.
+variable "datadog_tags" {
+  type    = string
+  default = ""
+}

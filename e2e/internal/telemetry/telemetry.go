@@ -8,12 +8,13 @@
 // non-empty result set proves those tags are present on ingested telemetry. The
 // run-unique service doubles as the run-id marker.
 //
+// Logs: the code-based Linux Web App workload logs to stdout, which Linux App
+// Service writes to a per-instance file on the /home volume shared with the
+// sidecar. The fixture enables DD_AAS_INSTANCE_LOGGING_ENABLED so serverless-init
+// tails that file, and the suite drives continuous traffic during the poll so the
+// end-tailer always has fresh lines. Logs are therefore required (ExpectLogs).
+//
 // KNOWN GAPS (verified against a live run on 2026-06-16; tracked follow-ups):
-//   - Logs: the code-based Linux Web App workload logs to stdout, which the
-//     serverless-init sidecar does not collect without DD_SERVERLESS_LOG_PATH /
-//     App Service instance logging -- config this module does not wire. Logs are
-//     therefore gated behind Options.ExpectLogs (default off). Closing the gap
-//     means wiring log collection in the module, then flipping ExpectLogs on.
 //   - version tag on spans: DD_VERSION reaches the app as an app setting and the
 //     `version` resource tag is applied (both asserted at the config layer in
 //     internal/verify), but the value was not observed on ingested spans. Span
@@ -65,12 +66,11 @@ type Expected struct {
 	Env     string
 }
 
-// Options tunes which signals are required. ExpectLogs gates the logs check:
-// the code-based Linux Web App workload logs to stdout, which the
-// serverless-init sidecar does not collect without DD_SERVERLESS_LOG_PATH /
-// App Service instance logging -- config the module does not currently wire.
-// Until that gap is closed, callers leave ExpectLogs false (traces still
-// required). Set E2E_EXPECT_LOGS=true to enforce it.
+// Options tunes which signals are required. ExpectLogs gates the logs check.
+// The Linux suite wires stdout log collection (DD_AAS_INSTANCE_LOGGING_ENABLED in
+// the fixture) and drives traffic during the poll, so it sets ExpectLogs true.
+// Windows App Service has no serverless-init log support, so a Windows suite
+// would leave this false (traces still required).
 type Options struct {
 	ExpectLogs bool
 }
