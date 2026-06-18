@@ -19,13 +19,12 @@ import (
 
 // sharedCfg parameterizes the shared exec/retry helper for this module: the `az`
 // CLI plus the Azure control-plane transient-error substrings safe to retry.
-// RunIDTagKey pins the run-id tag the cross-repo sweeper already keys on for
-// this repo (one_e2e_runid), preserving its existing hygiene convention.
+// The run-id tag uses the shared default (one_e2e_run_id), matching the other
+// e2e suites and the cross-repo serverless-e2e index.
 var sharedCfg = e2eshared.Config{
-	Tool:        "tfwebapp",
-	Platform:    "linux",
-	Command:     "az",
-	RunIDTagKey: "one_e2e_runid",
+	Tool:     "tfwebapp",
+	Platform: "linux",
+	Command:  "az",
 	RetryPatterns: []string{
 		"GatewayTimeout",
 		"RestError",
