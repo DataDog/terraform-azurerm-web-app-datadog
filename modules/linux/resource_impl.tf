@@ -391,10 +391,10 @@ resource "azurerm_linux_web_app" "this" {
     }
   }
   dynamic "sticky_settings" {
-    for_each = try(var.sticky_settings, null) != null ? [true] : []
+    for_each = local.sticky_settings != null ? [true] : []
     content {
-      app_setting_names       = try(var.sticky_settings.app_setting_names, null)
-      connection_string_names = try(var.sticky_settings.connection_string_names, null)
+      app_setting_names       = try(local.sticky_settings.app_setting_names, null)
+      connection_string_names = try(local.sticky_settings.connection_string_names, null)
     }
   }
   dynamic "storage_account" {

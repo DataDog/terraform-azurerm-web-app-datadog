@@ -24,6 +24,13 @@ locals {
     var.datadog_version != null ? { version = var.datadog_version } : {},
     var.tags
   )
+  sticky_settings = var.datadog_env != null ? {
+    app_setting_names = distinct(concat(
+      coalesce(try(var.sticky_settings.app_setting_names, null), []),
+      ["DD_ENV"]
+    ))
+    connection_string_names = try(var.sticky_settings.connection_string_names, null)
+  } : var.sticky_settings
 
 }
 
