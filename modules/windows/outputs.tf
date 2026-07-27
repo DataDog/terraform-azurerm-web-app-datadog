@@ -187,7 +187,7 @@ DESCRIPTION
 
 output "virtual_network_image_pull_enabled" {
   description = <<DESCRIPTION
-Whether traffic for the image pull should be routed over the virtual network.
+Whether traffic for the image pull should be routed over the virtual network. Defaults to `false`.
 DESCRIPTION
   value       = azurerm_windows_web_app.this.virtual_network_image_pull_enabled
 }
