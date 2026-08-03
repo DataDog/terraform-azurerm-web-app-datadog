@@ -131,6 +131,14 @@ Whether backup and restore operations over the linked virtual network are enable
 DESCRIPTION
 }
 
+variable "virtual_network_image_pull_enabled" {
+  type        = bool
+  default     = null
+  description = <<DESCRIPTION
+Whether traffic for the image pull should be routed over the virtual network. Defaults to `false`.
+DESCRIPTION
+}
+
 variable "virtual_network_subnet_id" {
   type        = string
   default     = null

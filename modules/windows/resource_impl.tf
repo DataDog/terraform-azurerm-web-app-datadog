@@ -20,6 +20,7 @@ resource "azurerm_windows_web_app" "this" {
   service_plan_id                                = var.service_plan_id
   tags                                           = local.tags
   virtual_network_backup_restore_enabled         = try(var.virtual_network_backup_restore_enabled, null)
+  virtual_network_image_pull_enabled             = try(var.virtual_network_image_pull_enabled, null)
   virtual_network_subnet_id                      = try(var.virtual_network_subnet_id, null)
   webdeploy_publish_basic_authentication_enabled = try(var.webdeploy_publish_basic_authentication_enabled, null)
   zip_deploy_file                                = try(var.zip_deploy_file, null)
