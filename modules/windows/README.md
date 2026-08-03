@@ -107,7 +107,7 @@ module "windows_web_app_datadog" {
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.0 |
 | <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | >= 2.5.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 4.81.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 5.0.1 |
 
 ## Modules
 
@@ -155,6 +155,7 @@ No modules.
 | <a name="input_tags"></a> [tags](#input\_tags) | A mapping of tags which should be assigned to the Windows Web App. | `map(string)` | `null` | no |
 | <a name="input_timeouts"></a> [timeouts](#input\_timeouts) | n/a | <pre>object({<br/>    create = optional(string),<br/>    delete = optional(string),<br/>    read   = optional(string),<br/>    update = optional(string)<br/>  })</pre> | `null` | no |
 | <a name="input_virtual_network_backup_restore_enabled"></a> [virtual\_network\_backup\_restore\_enabled](#input\_virtual\_network\_backup\_restore\_enabled) | Whether backup and restore operations over the linked virtual network are enabled. Defaults to `false`. | `bool` | `null` | no |
+| <a name="input_virtual_network_image_pull_enabled"></a> [virtual\_network\_image\_pull\_enabled](#input\_virtual\_network\_image\_pull\_enabled) | Whether traffic for the image pull should be routed over the virtual network. Defaults to `false`. | `bool` | `null` | no |
 | <a name="input_virtual_network_subnet_id"></a> [virtual\_network\_subnet\_id](#input\_virtual\_network\_subnet\_id) | The subnet id which will be used by this Web App for [regional virtual network integration](https://docs.microsoft.com/en-us/azure/app-service/overview-vnet-integration#regional-virtual-network-integration). | `string` | `null` | no |
 | <a name="input_webdeploy_publish_basic_authentication_enabled"></a> [webdeploy\_publish\_basic\_authentication\_enabled](#input\_webdeploy\_publish\_basic\_authentication\_enabled) | Should the default WebDeploy Basic Authentication publishing credentials enabled. Defaults to `true`. | `bool` | `null` | no |
 | <a name="input_zip_deploy_file"></a> [zip\_deploy\_file](#input\_zip\_deploy\_file) | The local path and filename of the Zip packaged application to deploy to this Windows Web App. **Note:** Using this value requires either `WEBSITE_RUN_FROM_PACKAGE=1` or `SCM_DO_BUILD_DURING_DEPLOYMENT=true` to be set on the App in `app_settings`. | `string` | `null` | no |
