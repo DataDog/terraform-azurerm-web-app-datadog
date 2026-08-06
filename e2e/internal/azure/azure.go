@@ -30,10 +30,12 @@ var sharedCfg = e2eshared.Config{
 		"RestError",
 		"Operation was canceled",
 		"ETIMEDOUT",
+		"Read timed out",
 		"ECONNRESET",
 		"doesn't exist",
 		"Conflict",
 		"TooManyRequests",
+		"Too Many Requests",
 		"ABORTED",
 		"DEADLINE_EXCEEDED",
 		"INTERNAL",
@@ -45,6 +47,11 @@ var sharedCfg = e2eshared.Config{
 	},
 }
 
+const (
+	readAttempts = 5
+	readDelay    = 15 * time.Second
+)
+
 // Client targets a single subscription.
 type Client struct {
 	SubscriptionID string
@@ -54,9 +61,15 @@ func New(subscriptionID string) *Client {
 	return &Client{SubscriptionID: subscriptionID}
 }
 
+// Validate checks that Azure CLI credentials can access the configured subscription.
+func (c *Client) Validate(ctx context.Context) error {
+	_, err := e2eshared.Run(ctx, sharedCfg, "account", "show", "--subscription", c.SubscriptionID, "--output", "none")
+	return err
+}
+
 // AppSettings returns the web app's application settings as a name->value map.
 func (c *Client) AppSettings(ctx context.Context, rg, app string) (map[string]string, error) {
-	res, err := e2eshared.RunWithRetries(ctx, sharedCfg, 3, 5*time.Second, "webapp", "config", "appsettings", "list",
+	res, err := e2eshared.RunWithRetries(ctx, sharedCfg, readAttempts, readDelay, "webapp", "config", "appsettings", "list",
 		"--subscription", c.SubscriptionID, "--resource-group", rg, "--name", app, "--output", "json")
 	if err != nil {
 		return nil, err
@@ -79,9 +92,13 @@ func (c *Client) AppSettings(ctx context.Context, rg, app string) (map[string]st
 type SiteContainer struct {
 	Name       string `json:"name"`
 	Properties struct {
-		Image      string `json:"image"`
-		IsMain     bool   `json:"isMain"`
-		TargetPort string `json:"targetPort"`
+		Image                string `json:"image"`
+		IsMain               bool   `json:"isMain"`
+		TargetPort           string `json:"targetPort"`
+		EnvironmentVariables []struct {
+			Name  string `json:"name"`
+			Value string `json:"value"`
+		} `json:"environmentVariables"`
 	} `json:"properties"`
 }
 
@@ -92,7 +109,7 @@ func (c *Client) SiteContainers(ctx context.Context, rg, app string) ([]SiteCont
 	url := fmt.Sprintf(
 		"/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Web/sites/%s/sitecontainers?api-version=2024-11-01",
 		c.SubscriptionID, rg, app)
-	res, err := e2eshared.RunWithRetries(ctx, sharedCfg, 3, 5*time.Second, "rest", "--method", "get", "--url", url, "--output", "json")
+	res, err := e2eshared.RunWithRetries(ctx, sharedCfg, readAttempts, readDelay, "rest", "--method", "get", "--url", url, "--output", "json")
 	if err != nil {
 		return nil, err
 	}
@@ -105,23 +122,52 @@ func (c *Client) SiteContainers(ctx context.Context, rg, app string) ([]SiteCont
 	return wrap.Value, nil
 }
 
-// Tags returns the web app's resource tags.
-func (c *Client) Tags(ctx context.Context, rg, app string) (map[string]string, error) {
-	res, err := e2eshared.RunWithRetries(ctx, sharedCfg, 3, 5*time.Second, "webapp", "show",
+// WebApp contains the deployed properties used by the verifier.
+type WebApp struct {
+	Tags       map[string]string `json:"tags"`
+	SiteConfig struct {
+		LinuxFxVersion string `json:"linuxFxVersion"`
+	} `json:"siteConfig"`
+}
+
+// GetWebApp returns the web app's resource tags and runtime configuration.
+func (c *Client) GetWebApp(ctx context.Context, rg, app string) (WebApp, error) {
+	res, err := e2eshared.RunWithRetries(ctx, sharedCfg, readAttempts, readDelay, "webapp", "show",
 		"--subscription", c.SubscriptionID, "--resource-group", rg, "--name", app, "--output", "json")
 	if err != nil {
-		return nil, err
+		return WebApp{}, err
 	}
-	var raw struct {
-		Tags map[string]string `json:"tags"`
+	var webApp WebApp
+	if err := json.Unmarshal([]byte(res.Stdout), &webApp); err != nil {
+		return WebApp{}, fmt.Errorf("parse webapp show: %w", err)
 	}
-	if err := json.Unmarshal([]byte(res.Stdout), &raw); err != nil {
-		return nil, fmt.Errorf("parse webapp show: %w", err)
+	if webApp.Tags == nil {
+		webApp.Tags = map[string]string{}
 	}
-	if raw.Tags == nil {
-		raw.Tags = map[string]string{}
+	return webApp, nil
+}
+
+// LogSettings contains the platform file-logging configuration.
+type LogSettings struct {
+	ApplicationLogs struct {
+		FileSystem struct {
+			Level string `json:"level"`
+		} `json:"fileSystem"`
+	} `json:"applicationLogs"`
+}
+
+// GetLogSettings returns the web app's logging configuration.
+func (c *Client) GetLogSettings(ctx context.Context, rg, app string) (LogSettings, error) {
+	res, err := e2eshared.RunWithRetries(ctx, sharedCfg, readAttempts, readDelay, "webapp", "log", "show",
+		"--subscription", c.SubscriptionID, "--resource-group", rg, "--name", app, "--output", "json")
+	if err != nil {
+		return LogSettings{}, err
 	}
-	return raw.Tags, nil
+	var settings LogSettings
+	if err := json.Unmarshal([]byte(res.Stdout), &settings); err != nil {
+		return LogSettings{}, fmt.Errorf("parse webapp log settings: %w", err)
+	}
+	return settings, nil
 }
 
 // WebAppExists reports whether the web app still exists. Used to assert the
@@ -129,7 +175,7 @@ func (c *Client) Tags(ctx context.Context, rg, app string) (map[string]string, e
 func (c *Client) WebAppExists(ctx context.Context, rg, app string) (bool, error) {
 	// A non-zero exit is expected post-destroy, so we inspect the Result rather
 	// than treating the returned error as fatal.
-	res, _ := e2eshared.Run(ctx, sharedCfg, "webapp", "show",
+	res, _ := e2eshared.RunWithRetries(ctx, sharedCfg, readAttempts, readDelay, "webapp", "show",
 		"--subscription", c.SubscriptionID, "--resource-group", rg, "--name", app, "--output", "json")
 	if res.ExitCode == 0 {
 		return true, nil
