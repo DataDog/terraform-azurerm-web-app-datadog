@@ -47,6 +47,12 @@ module "datadog_linux_web_app" {
   service_plan_id     = azurerm_service_plan.this.id
   https_only          = true
 
+  logs = {
+    application_logs = {
+      file_system_level = "Information"
+    }
+  }
+
   site_config = {
     # The prebuilt workload package needs an explicit startup command to boot on
     # a Linux Web App (the published self-monitoring template sets the same).
