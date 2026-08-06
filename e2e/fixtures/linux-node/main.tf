@@ -63,20 +63,15 @@ module "datadog_linux_web_app" {
     }
   }
 
-  # Workload log collection. The code-based workload logs to stdout; Linux App
-  # Service writes that container stream to /home/LogFiles/*<COMPUTERNAME>*.log on
-  # the /home volume the module already shares with the sidecar
-  # (WEBSITES_ENABLE_APP_SERVICE_STORAGE=true). DD_AAS_INSTANCE_LOGGING_ENABLED
-  # points serverless-init at that per-instance file; the _default_docker
-  # descriptor keeps the tailer on the active log and ignores rotated files.
-  # DD_TAGS stamps the run-id marker onto ingested telemetry (see var.datadog_tags).
+  # The code-based workload writes stdout to /home/LogFiles. Use the documented
+  # code-app path rather than container-instance log discovery.
   app_settings = {
-    DD_AAS_INSTANCE_LOGGING_ENABLED     = "true"
-    DD_AAS_INSTANCE_LOG_FILE_DESCRIPTOR = "_default_docker"
-    DD_LOGS_ENABLED                     = "true"
-    DD_LOGS_INJECTION                   = "true"
-    DD_TAGS                             = var.datadog_tags
-    DD_TRACE_ENABLED                    = "true"
+    DD_AAS_INSTANCE_LOGGING_ENABLED = "false"
+    DD_LOGS_ENABLED                 = "true"
+    DD_LOGS_INJECTION               = "true"
+    DD_SERVERLESS_LOG_PATH          = "/home/LogFiles/*.log"
+    DD_TAGS                         = var.datadog_tags
+    DD_TRACE_ENABLED                = "true"
   }
 
   tags = var.tags
