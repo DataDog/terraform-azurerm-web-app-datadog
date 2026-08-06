@@ -67,7 +67,9 @@ module "datadog_linux_web_app" {
   app_settings = {
     DD_AAS_INSTANCE_LOGGING_ENABLED     = "true"
     DD_AAS_INSTANCE_LOG_FILE_DESCRIPTOR = "_default_docker"
+    DD_LOGS_INJECTION                   = "true"
     DD_TAGS                             = var.datadog_tags
+    DD_TRACE_ENABLED                    = "true"
   }
 
   tags = var.tags
