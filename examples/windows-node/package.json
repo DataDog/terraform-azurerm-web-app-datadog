@@ -6,9 +6,9 @@
         "start": "node index.js"
     },
     "dependencies": {
-        "body-parser": "2.2.2",
+        "body-parser": "2.3.0",
         "cors": "^2.8.6",
-        "dd-trace": "^5.87.0",
+        "dd-trace": "^5.119.0",
         "express": "5.2.1",
         "helmet": "8.1.0"
     },
