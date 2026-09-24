@@ -48,6 +48,7 @@ This module exposes all supported arguments available in the [azurerm_windows_we
 - **Site**: The `datadog_site` variable defaults to `datadoghq.com`. Set this to your Datadog region if needed (e.g., `datadoghq.eu`).
 - **Unified Service Tagging**: Use `datadog_env`, `datadog_service`, and `datadog_version` to enable [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/).
 - **App Settings**: If you use `zip_deploy_file`, set `WEBSITE_RUN_FROM_PACKAGE=1` in `app_settings`.
+- **Run-from-package deployments**: The module sets `WEBSITE_RUN_FROM_PACKAGE` during resource creation but ignores subsequent changes to that setting, allowing external deployment pipelines to manage the deployed package.
 
 The module will automatically configure the Datadog extension for your web app, enabling metrics, traces, and logs collection.
 

@@ -410,4 +410,10 @@ resource "azurerm_linux_web_app_slot" "this" {
       update = try(var.timeouts.update, null)
     }
   }
+
+  lifecycle {
+    ignore_changes = [
+      app_settings["WEBSITE_RUN_FROM_PACKAGE"],
+    ]
+  }
 }
