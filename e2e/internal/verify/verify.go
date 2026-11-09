@@ -115,14 +115,14 @@ func Instrumented(ctx context.Context, client *azure.Client, resourceGroup, app 
 	return violations.Err("instrumentation contract violations")
 }
 
-// Removed asserts that destroy removed the web app and its instrumentation.
-func Removed(ctx context.Context, client *azure.Client, resourceGroup, app string) error {
-	exists, err := client.WebAppExists(ctx, resourceGroup, app)
+// Removed asserts that destroy removed the resource group and everything in it.
+func Removed(ctx context.Context, client *azure.Client, resourceGroup string) error {
+	exists, err := client.ResourceGroupExists(ctx, resourceGroup)
 	if err != nil {
 		return err
 	}
 	if exists {
-		return fmt.Errorf("web app %q still exists after destroy", app)
+		return fmt.Errorf("resource group %q still exists after destroy", resourceGroup)
 	}
 	return nil
 }

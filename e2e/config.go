@@ -2,7 +2,6 @@ package e2e
 
 import (
 	"os"
-	"sort"
 	"testing"
 )
 
@@ -21,6 +20,7 @@ type config struct {
 	appKey         string
 	storageAccount string
 	sidecarImage   string
+	runID          string
 }
 
 func loadConfig(t *testing.T) config {
@@ -28,37 +28,35 @@ func loadConfig(t *testing.T) config {
 
 	cfg := config{
 		subscriptionID: os.Getenv("AZURE_SUBSCRIPTION_ID"),
-		location:       firstNonEmpty(os.Getenv("AZURE_LOCATION"), defaultLocation),
-		site:           firstNonEmpty(os.Getenv("DD_SITE"), defaultSite),
-		apiKey:         firstNonEmpty(os.Getenv("DATADOG_API_KEY"), os.Getenv("DD_API_KEY")),
-		appKey:         firstNonEmpty(os.Getenv("DATADOG_APP_KEY"), os.Getenv("DD_APP_KEY")),
-		storageAccount: firstNonEmpty(os.Getenv("E2E_STORAGE_ACCOUNT"), defaultStorageAccount),
-		sidecarImage:   firstNonEmpty(os.Getenv("E2E_SIDECAR_IMAGE"), defaultSidecarImage),
+		location:       getEnv("AZURE_LOCATION", defaultLocation),
+		site:           getEnv("DD_SITE", defaultSite),
+		apiKey:         os.Getenv("DD_API_KEY"),
+		appKey:         os.Getenv("DD_APP_KEY"),
+		storageAccount: getEnv("E2E_STORAGE_ACCOUNT", defaultStorageAccount),
+		sidecarImage:   getEnv("E2E_SIDECAR_IMAGE", defaultSidecarImage),
+		runID:          os.Getenv("E2E_RUN_ID"),
 	}
 
-	missing := make([]string, 0, 3)
-	for name, value := range map[string]string{
-		"AZURE_SUBSCRIPTION_ID":      cfg.subscriptionID,
-		"DATADOG_API_KEY/DD_API_KEY": cfg.apiKey,
-		"DATADOG_APP_KEY/DD_APP_KEY": cfg.appKey,
+	var missing []string
+	for _, required := range []struct{ name, value string }{
+		{"AZURE_SUBSCRIPTION_ID", cfg.subscriptionID},
+		{"DD_API_KEY", cfg.apiKey},
+		{"DD_APP_KEY", cfg.appKey},
 	} {
-		if value == "" {
-			missing = append(missing, name)
+		if required.value == "" {
+			missing = append(missing, required.name)
 		}
 	}
 	if len(missing) > 0 {
-		sort.Strings(missing)
 		t.Fatalf("missing required e2e configuration: %v", missing)
 	}
 
 	return cfg
 }
 
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		if value != "" {
-			return value
-		}
+func getEnv(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
 	}
-	return ""
+	return fallback
 }

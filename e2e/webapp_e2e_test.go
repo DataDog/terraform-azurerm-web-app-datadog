@@ -2,28 +2,31 @@ package e2e
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/require"
 
 	"github.com/DataDog/terraform-azurerm-web-app-datadog/e2e/internal/azure"
-	"github.com/DataDog/terraform-azurerm-web-app-datadog/e2e/internal/telemetry"
 	"github.com/DataDog/terraform-azurerm-web-app-datadog/e2e/internal/verify"
 	e2eshared "github.com/DataDog/terraform-azurerm-web-app-datadog/e2e/shared"
 )
 
 var sharedCfg = e2eshared.Config{
-	Tool:     "tfwebapp",
-	Platform: "linux",
+	Tool:     "tf",
+	Platform: "aas-linux",
 }
 
 const (
-	fixtureDir   = "fixtures/linux-node"
+	fixtureDir   = "e2e/fixtures/linux-node"
 	workloadBlob = "node-sidecar.zip"
 	ddEnv        = "e2e"
 	ddVersion    = "1.0.0"
@@ -39,15 +42,21 @@ func TestLinuxNodeWebAppE2E(t *testing.T) {
 		require.NoError(t, az.Validate(ctx), "validate Azure credentials and subscription")
 	})
 
-	runID := e2eshared.NewRunID()
+	runID := cfg.runID
+	if runID == "" {
+		runID = e2eshared.NewRunID()
+	}
 	created := time.Now().Unix()
-	createdTS := strconv.FormatInt(created, 10)
 	appName := e2eshared.ResourceName(sharedCfg, runID)
 	rgName := appName + "-rg"
 	t.Logf("run id %s -> web app %s", runID, appName)
 
+	// Run from a copy of the repository so local state never leaks between runs.
+	repoCopy, err := files.CopyTerraformFolderToTemp("..", "e2e-")
+	require.NoError(t, err)
+	t.Cleanup(func() { os.RemoveAll(repoCopy) })
 	tfOpts := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: fixtureDir,
+		TerraformDir: filepath.Join(repoCopy, fixtureDir),
 		Vars: map[string]interface{}{
 			"subscription_id":     cfg.subscriptionID,
 			"datadog_site":        cfg.site,
@@ -72,43 +81,37 @@ func TestLinuxNodeWebAppE2E(t *testing.T) {
 		"Cannot modify this web hosting plan": "App Service plan busy; retrying.",
 		"AnotherOperationInProgress":          "Concurrent operation; retrying.",
 		"(?s)429.*(TooManyRequests|Throttl)":  "ARM throttling; retrying.",
-		"(?s)unexpected status 409":           "ARM 409 conflict; retrying.",
-		"RetryableError":                      "Retryable cloud error; retrying.",
 	} {
 		tfOpts.RetryableTerraformErrors[pattern] = message
 	}
-	tfOpts.MaxRetries = 6
+	tfOpts.MaxRetries = 3
 	tfOpts.TimeBetweenRetries = 30 * time.Second
 
-	cleaned := false
-	cleanup := func() {
-		runPhase(t, "destroy", func() { terraform.Destroy(t, tfOpts) })
-		runPhase(t, "cleanup verification", func() {
-			require.NoError(t, verify.Removed(ctx, az, rgName, appName), "destroy must leave no web app")
-		})
-	}
-	defer func() {
-		if !cleaned {
-			cleaned = true
-			cleanup()
+	defer runPhase(t, "teardown", func() {
+		if _, err := terraform.DestroyE(t, tfOpts); err != nil {
+			t.Errorf("terraform destroy failed: %v", err)
+			if err := az.DeleteResourceGroup(ctx, rgName); err != nil {
+				t.Errorf("fallback delete of resource group %q failed: %v", rgName, err)
+			}
+			return
 		}
-	}()
+		require.NoError(t, verify.Removed(ctx, az, rgName), "destroy must remove the resource group")
+	})
 
 	runPhase(t, "instrumentation deploy", func() { terraform.InitAndApply(t, tfOpts) })
 
-	expected := verify.Expected{
-		Service:      appName,
-		Site:         cfg.site,
-		Env:          ddEnv,
-		Version:      ddVersion,
-		Runtime:      nodeRuntime,
-		RunID:        runID,
-		CreatedTS:    createdTS,
-		SidecarImage: cfg.sidecarImage,
-		APIKey:       cfg.apiKey,
-	}
 	runPhase(t, "config verification", func() {
-		require.NoError(t, verify.Instrumented(ctx, az, rgName, appName, expected))
+		require.NoError(t, verify.Instrumented(ctx, az, rgName, appName, verify.Expected{
+			Service:      appName,
+			Site:         cfg.site,
+			Env:          ddEnv,
+			Version:      ddVersion,
+			Runtime:      nodeRuntime,
+			RunID:        runID,
+			CreatedTS:    strconv.FormatInt(created, 10),
+			SidecarImage: cfg.sidecarImage,
+			APIKey:       cfg.apiKey,
+		}))
 	})
 
 	runPhase(t, "workload bundle deploy", func() {
@@ -122,39 +125,57 @@ func TestLinuxNodeWebAppE2E(t *testing.T) {
 	hostname := terraform.Output(t, tfOpts, "default_hostname")
 	runPhase(t, "invoke", func() { triggerWorkload(t, hostname) })
 
+	runPhase(t, "telemetry wait", func() {
+		checkTelemetryFlowing(t, ctx, hostname, cfg, e2eshared.IdentityFor(sharedCfg, appName, ddEnv, "", runID))
+	})
+
+	runPhase(t, "idempotency check", func() {
+		exitCode := terraform.PlanExitCode(t, tfOpts)
+		if exitCode != 0 {
+			t.Log(terraform.Plan(t, tfOpts))
+		}
+		require.Equal(t, 0, exitCode, "re-apply must be a no-op")
+	})
+}
+
+// checkTelemetryFlowing waits for spans and logs that carry the run's service, env, and
+// run ID. serverless-init tails log files from the end, so traffic keeps fresh lines
+// flowing while the logs poll runs.
+func checkTelemetryFlowing(t *testing.T, ctx context.Context, hostname string, cfg config, id e2eshared.Identity) {
+	t.Helper()
+	client := e2eshared.NewTelemetryClient(cfg.site, cfg.apiKey, cfg.appKey)
+
 	trafficCtx, stopTraffic := context.WithCancel(ctx)
 	defer stopTraffic()
 	go e2eshared.GenerateTraffic(trafficCtx, "https://"+hostname, 5*time.Second)
 
-	telemetryCtx, cancelTelemetry := context.WithTimeout(ctx, 12*time.Minute)
-	defer cancelTelemetry()
-	runPhase(t, "telemetry wait", func() {
-		require.NoError(t, telemetry.CheckTelemetryFlowing(telemetryCtx,
-			telemetry.Config{APIKey: cfg.apiKey, AppKey: cfg.appKey, Site: cfg.site},
-			telemetry.Expected{Service: appName, Env: ddEnv},
-			telemetry.Options{ExpectLogs: true}))
-	})
-	stopTraffic()
+	type result struct {
+		label string
+		err   error
+	}
+	results := make(chan result, 2)
+	go func() {
+		_, err := client.WaitForMatching(ctx, "spans", client.SearchSpans, e2eshared.SpanQuery(id), id)
+		results <- result{"spans", err}
+	}()
+	go func() {
+		_, err := client.WaitForMatching(ctx, "logs", client.SearchLogs, e2eshared.LogQuery(id), id)
+		results <- result{"logs", err}
+	}()
 
-	runPhase(t, "idempotency check", func() {
-		require.Equal(t, 0, terraform.PlanExitCode(t, tfOpts), "re-apply must be a no-op")
-	})
-
-	cleaned = true
-	cleanup()
+	var failures []string
+	for range 2 {
+		if r := <-results; r.err != nil {
+			failures = append(failures, fmt.Sprintf("%s: %v", r.label, r.err))
+		}
+	}
+	require.Empty(t, failures, "telemetry did not flow: %s", strings.Join(failures, "; "))
 }
 
 func runPhase(t *testing.T, name string, run func()) {
 	t.Helper()
-	done := logProgress(t, name)
-	defer done()
-	run()
-}
-
-func logProgress(t *testing.T, phase string) func() {
-	t.Helper()
 	started := time.Now()
-	t.Logf("START: %s", phase)
+	t.Logf("START: %s", name)
 
 	stop := make(chan struct{})
 	done := make(chan struct{})
@@ -165,47 +186,40 @@ func logProgress(t *testing.T, phase string) func() {
 		for {
 			select {
 			case <-ticker.C:
-				t.Logf("RUNNING: %s (%s elapsed)", phase, time.Since(started).Round(time.Second))
+				t.Logf("RUNNING: %s (%s elapsed)", name, time.Since(started).Round(time.Second))
 			case <-stop:
 				return
 			}
 		}
 	}()
-
-	return func() {
+	defer func() {
 		close(stop)
 		<-done
-		t.Logf("DONE: %s (%s)", phase, time.Since(started).Round(time.Second))
-	}
+		t.Logf("DONE: %s (%s)", name, time.Since(started).Round(time.Second))
+	}()
+
+	run()
 }
 
+// triggerWorkload waits for the workload to serve a 2xx response.
 func triggerWorkload(t *testing.T, hostname string) {
 	t.Helper()
 	url := "https://" + hostname + "/"
 	client := &http.Client{Timeout: 30 * time.Second}
 
-	const maxAttempts = 40
+	const maxAttempts = 20
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
 		resp, err := client.Get(url)
-		if err == nil {
-			resp.Body.Close()
-			if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
-				t.Logf("invoke attempt %d/%d: HTTP %d", attempt, maxAttempts, resp.StatusCode)
-				for i := 0; i < 3; i++ {
-					if response, requestErr := client.Get(url); requestErr == nil {
-						response.Body.Close()
-					}
-					time.Sleep(2 * time.Second)
-				}
-				return
-			}
-		}
 		if err != nil {
 			t.Logf("invoke attempt %d/%d: %v", attempt, maxAttempts, err)
 		} else {
+			resp.Body.Close()
 			t.Logf("invoke attempt %d/%d: HTTP %d", attempt, maxAttempts, resp.StatusCode)
+			if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
+				return
+			}
 		}
-		time.Sleep(15 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 	t.Fatalf("workload at %s did not return 2xx", url)
 }

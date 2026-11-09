@@ -20,6 +20,10 @@ on:
       - 'e2e/**'
       - '.github/workflows/e2e.yaml'
 
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   e2e:
     name: Linux Web App e2e
@@ -27,26 +31,27 @@ jobs:
       github.repository == 'DataDog/terraform-azurerm-web-app-datadog' &&
       (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
+    timeout-minutes: 50
     permissions:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Setup Go
-        uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version-file: e2e/go.mod
           cache-dependency-path: e2e/go.sum
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
           terraform_version: 1.5.7
           terraform_wrapper: false
 
       - name: Azure login (OIDC)
-        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+        uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID_E2E }}
           tenant-id: ${{ vars.AZURE_TENANT_ID_E2E }}
@@ -58,12 +63,14 @@ jobs:
         with:
           policy: terraform-azurerm-web-app-datadog-e2e
 
+      - name: Set run ID
+        run: echo "E2E_RUN_ID=$(openssl rand -hex 4)" >> "$GITHUB_ENV"
+
       - name: Run e2e suite
         working-directory: e2e
         shell: bash
-        run: go test -count=1 -v -timeout 45m -json ./... | jq --unbuffered -jr 'select(.Action == "output") | .Output'
+        run: go test -count=1 -v -timeout 40m -json ./... | jq --unbuffered -jr 'select(.Action == "output") | .Output'
         env:
-          GO111MODULE: on
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID_E2E }}
           ARM_USE_OIDC: 'true'
           ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID_E2E }}
@@ -71,6 +78,18 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID_E2E }}
           DD_SITE: ${{ vars.DD_SITE_E2E || 'datadoghq.com' }}
           DD_API_KEY: ${{ steps.dd-sts.outputs.api_key }}
-          DATADOG_API_KEY: ${{ steps.dd-sts.outputs.api_key }}
-          DATADOG_APP_KEY: ${{ steps.dd-sts.outputs.app_key }}
+          DD_APP_KEY: ${{ steps.dd-sts.outputs.app_key }}
           E2E_STORAGE_ACCOUNT: ${{ vars.E2E_STORAGE_ACCOUNT }}
+
+      # Catches resources left behind when the test times out or the run is cancelled.
+      - name: Delete leftover resource groups
+        if: always() && env.E2E_RUN_ID != ''
+        shell: bash
+        run: |
+          az group list \
+            --subscription "${{ vars.AZURE_SUBSCRIPTION_ID_E2E }}" \
+            --tag "one_e2e_run_id=$E2E_RUN_ID" \
+            --query '[].name' \
+            --output tsv \
+            --only-show-errors |
+            xargs -r -n1 az group delete --subscription "${{ vars.AZURE_SUBSCRIPTION_ID_E2E }}" --yes --no-wait --only-show-errors --name

@@ -1,8 +1,5 @@
-// Package azure wraps the `az` CLI for the resource inspection and workload
-// deployment the e2e suite needs. It mirrors how the datadog-ci reference impl
-// shells out to the cloud CLI (gcloud / az) and parses JSON, rather than
-// pulling in a heavy SDK. All calls go through the shared bounded-retry exec
-// helper (e2eshared.Run/RunWithRetries).
+// Package azure wraps the `az` CLI calls that inspect resources and deploy the
+// workload. All calls go through the shared bounded-retry exec helper.
 package azure
 
 import (
@@ -11,39 +8,26 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
+	"strconv"
 	"time"
 
 	e2eshared "github.com/DataDog/terraform-azurerm-web-app-datadog/e2e/shared"
 )
 
-// sharedCfg parameterizes the shared exec/retry helper for this module: the `az`
-// CLI plus the Azure control-plane transient-error substrings safe to retry.
-// The run-id tag uses the shared default (one_e2e_run_id), matching the other
-// e2e suites and the cross-repo serverless-e2e index.
+// sharedCfg runs the `az` CLI and retries only transient Azure control-plane failures.
 var sharedCfg = e2eshared.Config{
-	Tool:     "tfwebapp",
-	Platform: "linux",
-	Command:  "az",
+	Command: "az",
 	RetryPatterns: []string{
-		"GatewayTimeout",
-		"RestError",
-		"Operation was canceled",
-		"ETIMEDOUT",
-		"Read timed out",
-		"ECONNRESET",
-		"doesn't exist",
-		"Conflict",
-		"TooManyRequests",
-		"Too Many Requests",
-		"ABORTED",
-		"DEADLINE_EXCEEDED",
-		"INTERNAL",
-		"RESOURCE_EXHAUSTED",
-		"UNAVAILABLE",
-		"temporarily unavailable",
 		"AnotherOperationInProgress",
+		"Conflict",
+		"ECONNRESET",
+		"ETIMEDOUT",
+		"GatewayTimeout",
+		"InternalServerError",
+		"Read timed out",
 		"ServiceUnavailable",
+		"TooManyRequests",
+		"temporarily unavailable",
 	},
 }
 
@@ -170,22 +154,21 @@ func (c *Client) GetLogSettings(ctx context.Context, rg, app string) (LogSetting
 	return settings, nil
 }
 
-// WebAppExists reports whether the web app still exists. Used to assert the
-// clean end-state after REMOVE.
-func (c *Client) WebAppExists(ctx context.Context, rg, app string) (bool, error) {
-	// A non-zero exit is expected post-destroy, so we inspect the Result rather
-	// than treating the returned error as fatal.
-	res, _ := e2eshared.RunWithRetries(ctx, sharedCfg, readAttempts, readDelay, "webapp", "show",
-		"--subscription", c.SubscriptionID, "--resource-group", rg, "--name", app, "--output", "json")
-	if res.ExitCode == 0 {
-		return true, nil
+// ResourceGroupExists reports whether the resource group still exists.
+func (c *Client) ResourceGroupExists(ctx context.Context, rg string) (bool, error) {
+	res, err := e2eshared.RunWithRetries(ctx, sharedCfg, readAttempts, readDelay, "group", "exists",
+		"--subscription", c.SubscriptionID, "--name", rg)
+	if err != nil {
+		return false, err
 	}
-	// ResourceNotFound is the expected post-destroy outcome.
-	if strings.Contains(res.Stderr, "ResourceNotFound") || strings.Contains(res.Stderr, "could not be found") ||
-		strings.Contains(res.Stderr, "was not found") {
-		return false, nil
-	}
-	return false, fmt.Errorf("webapp show failed unexpectedly: %s", res.Stderr)
+	return strconv.ParseBool(res.Stdout)
+}
+
+// DeleteResourceGroup starts deleting the resource group and everything in it.
+func (c *Client) DeleteResourceGroup(ctx context.Context, rg string) error {
+	_, err := e2eshared.RunWithRetries(ctx, sharedCfg, 3, 5*time.Second, "group", "delete",
+		"--subscription", c.SubscriptionID, "--name", rg, "--yes", "--no-wait")
+	return err
 }
 
 // DeployPrebuiltPackage downloads the prebuilt prod workload package from the

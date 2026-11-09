@@ -2,7 +2,7 @@
 
 ## Lifecycle contract
 
-The test deploys an instrumented Linux Web App, verifies its runtime, sidecar, app settings, and resource tags, invokes the workload, and waits for traces and logs. It then confirms a second Terraform plan has no changes, destroys the resources, and verifies the app is gone.
+The test deploys an instrumented Linux Web App, verifies its runtime, sidecar, app settings, and resource tags, invokes the workload, and waits for traces and logs. It then confirms a second Terraform plan has no changes, destroys the resources, and verifies the resource group is gone.
 
 ## Prerequisites
 
@@ -32,4 +32,4 @@ Missing required credentials or configuration fails during authentication or the
 
 ## Resource hygiene
 
-Each run uses the `one-e2e-tfwebapp-linux-<run-id>` prefix. Resources carry exact `one_e2e_run_id` and `one_e2e_created` tags so the cross-repository sweeper can remove leaks. The test always attempts destroy and verifies cleanup; workflow runs are not cancelled in progress.
+Each run uses the `one-e2e-tf-aas-linux-<run-id>` prefix. Resources carry exact `one_e2e_run_id` and `one_e2e_created` tags so the cross-repository sweeper can remove leaks. The test always attempts destroy and deletes the resource group if destroy fails. In CI, a final step deletes any resource group tagged with the run ID, which covers timeouts and cancelled runs.
