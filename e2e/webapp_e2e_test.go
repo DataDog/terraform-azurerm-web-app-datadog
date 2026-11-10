@@ -150,27 +150,47 @@ func checkTelemetryFlowing(t *testing.T, ctx context.Context, hostname string, c
 	defer stopTraffic()
 	go e2eshared.GenerateTraffic(trafficCtx, "https://"+hostname, 5*time.Second)
 
-	type result struct {
+	type search struct {
 		label string
-		err   error
+		run   func(context.Context, string) ([]e2eshared.Event, error)
+		query string
 	}
-	results := make(chan result, 2)
-	go func() {
-		_, err := client.WaitForMatching(ctx, "spans", client.SearchSpans, e2eshared.SpanQuery(id), id)
-		results <- result{"spans", err}
-	}()
-	go func() {
-		_, err := client.WaitForMatching(ctx, "logs", client.SearchLogs, e2eshared.LogQuery(id), id)
-		results <- result{"logs", err}
-	}()
+	searches := []search{
+		{"spans", client.SearchSpans, e2eshared.SpanQuery(id)},
+		{"logs", client.SearchLogs, e2eshared.LogQuery(id)},
+	}
+	errs := make(chan error, len(searches))
+	for _, s := range searches {
+		go func() {
+			_, err := client.WaitForMatching(ctx, s.label, s.run, s.query, id)
+			if err != nil {
+				err = fmt.Errorf("%w; sample: %s", err, sampleEvent(ctx, s.run, s.query))
+			}
+			errs <- err
+		}()
+	}
 
 	var failures []string
-	for range 2 {
-		if r := <-results; r.err != nil {
-			failures = append(failures, fmt.Sprintf("%s: %v", r.label, r.err))
+	for range searches {
+		if err := <-errs; err != nil {
+			failures = append(failures, err.Error())
 		}
 	}
 	require.Empty(t, failures, "telemetry did not flow: %s", strings.Join(failures, "; "))
+}
+
+// sampleEvent describes one event matching query, so identity mismatches show what
+// Datadog actually received.
+func sampleEvent(ctx context.Context, search func(context.Context, string) ([]e2eshared.Event, error), query string) string {
+	events, err := search(ctx, query)
+	switch {
+	case err != nil:
+		return err.Error()
+	case len(events) == 0:
+		return "none"
+	default:
+		return fmt.Sprintf("attrs=%v tags=%v", events[0].Attrs, events[0].Tags)
+	}
 }
 
 func runPhase(t *testing.T, name string, run func()) {
