@@ -68,8 +68,8 @@ jobs:
 
       - name: Run e2e suite
         working-directory: e2e
-        shell: bash
-        run: go test -count=1 -v -timeout 40m -json ./... | jq --unbuffered -jr 'select(.Action == "output") | .Output'
+        # -p 1 streams -v output as tests run, across multiple packages.
+        run: go test -count=1 -v -p 1 -timeout 40m ./...
         env:
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID_E2E }}
           ARM_USE_OIDC: 'true'

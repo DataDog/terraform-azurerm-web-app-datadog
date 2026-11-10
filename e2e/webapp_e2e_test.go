@@ -126,7 +126,7 @@ func TestLinuxNodeWebAppE2E(t *testing.T) {
 	runPhase(t, "invoke", func() { triggerWorkload(t, hostname) })
 
 	runPhase(t, "telemetry wait", func() {
-		checkTelemetryFlowing(t, ctx, hostname, cfg, e2eshared.IdentityFor(sharedCfg, appName, ddEnv, "", runID))
+		checkTelemetryFlowing(t, ctx, hostname, cfg, e2eshared.IdentityFor(sharedCfg, appName, ddEnv, ddVersion, runID))
 	})
 
 	runPhase(t, "idempotency check", func() {
@@ -138,8 +138,8 @@ func TestLinuxNodeWebAppE2E(t *testing.T) {
 	})
 }
 
-// checkTelemetryFlowing waits for spans and logs that carry the run's service, env, and
-// run ID. serverless-init tails log files from the end, so traffic keeps fresh lines
+// checkTelemetryFlowing waits for spans and logs that carry the run's service, env,
+// version, and run ID. serverless-init tails log files from the end, so traffic keeps fresh lines
 // flowing while the logs poll runs.
 func checkTelemetryFlowing(t *testing.T, ctx context.Context, hostname string, cfg config, id e2eshared.Identity) {
 	t.Helper()
