@@ -154,15 +154,20 @@ func checkTelemetryFlowing(t *testing.T, ctx context.Context, hostname string, c
 		label string
 		run   func(context.Context, string) ([]e2eshared.Event, error)
 		query string
+		id    e2eshared.Identity
 	}
+	// The shared parser does not read span tags under `custom`, where spans carry
+	// version, so spans filter on @version server-side and match the rest in-process.
+	spanID := id
+	spanID.Version = ""
 	searches := []search{
-		{"spans", client.SearchSpans, e2eshared.SpanQuery(id)},
-		{"logs", client.SearchLogs, e2eshared.LogQuery(id)},
+		{"spans", client.SearchSpans, e2eshared.SpanQuery(id) + " @version:" + id.Version, spanID},
+		{"logs", client.SearchLogs, e2eshared.LogQuery(id), id},
 	}
 	errs := make(chan error, len(searches))
 	for _, s := range searches {
 		go func() {
-			_, err := client.WaitForMatching(ctx, s.label, s.run, s.query, id)
+			_, err := client.WaitForMatching(ctx, s.label, s.run, s.query, s.id)
 			if err != nil {
 				err = fmt.Errorf("%w; sample: %s", err, sampleEvent(ctx, s.run, s.query))
 			}
