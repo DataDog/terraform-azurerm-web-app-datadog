@@ -77,10 +77,11 @@ func TestLinuxNodeWebAppE2E(t *testing.T) {
 		NoColor: true,
 	})
 	for pattern, message := range map[string]string{
-		"another operation is in progress":    "App Service operation in progress; retrying.",
-		"Cannot modify this web hosting plan": "App Service plan busy; retrying.",
-		"AnotherOperationInProgress":          "Concurrent operation; retrying.",
-		"(?s)429.*(TooManyRequests|Throttl)":  "ARM throttling; retrying.",
+		"another operation is in progress":               "App Service operation in progress; retrying.",
+		"Cannot modify this web hosting plan":            "App Service plan busy; retrying.",
+		"AnotherOperationInProgress":                     "Concurrent operation; retrying.",
+		"(?s)429.*(TooManyRequests|Throttl)":             "ARM throttling; retrying.",
+		"No available instances to satisfy this request": "App Service capacity shortage; retrying.",
 	} {
 		tfOpts.RetryableTerraformErrors[pattern] = message
 	}
@@ -139,8 +140,8 @@ func TestLinuxNodeWebAppE2E(t *testing.T) {
 }
 
 // checkTelemetryFlowing waits for spans and logs that carry the run's service, env,
-// version, and run ID. serverless-init tails log files from the end, so traffic keeps fresh lines
-// flowing while the logs poll runs.
+// version, and run ID. serverless-init tails log files from the end, so traffic keeps
+// fresh lines flowing while the logs poll runs.
 func checkTelemetryFlowing(t *testing.T, ctx context.Context, hostname string, cfg config, id e2eshared.Identity) {
 	t.Helper()
 	client := e2eshared.NewTelemetryClient(cfg.site, cfg.apiKey, cfg.appKey)
