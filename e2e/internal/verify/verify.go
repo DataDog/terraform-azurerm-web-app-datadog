@@ -65,7 +65,7 @@ func Instrumented(ctx context.Context, client *azure.Client, resourceGroup, app 
 	} else {
 		sidecar := sidecars[0]
 		if sidecar.Properties.Image != expected.SidecarImage {
-			violations.Addf("sidecar image = %q, want pinned %q", sidecar.Properties.Image, expected.SidecarImage)
+			violations.Addf("sidecar image = %q, want %q", sidecar.Properties.Image, expected.SidecarImage)
 		}
 		if sidecar.Properties.IsMain {
 			violations.Addf("sidecar is marked as the main container")

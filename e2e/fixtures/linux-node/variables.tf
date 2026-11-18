@@ -47,11 +47,9 @@ variable "resource_group_name" {
   nullable = false
 }
 
-# Pinned sidecar image. The multi-architecture digest keeps test runs independent
-# of mutable registry tags.
 variable "sidecar_image" {
   type    = string
-  default = "index.docker.io/datadog/serverless-init@sha256:6fb7637628fdf31d536bc9c49fbe6304371df5e2ecdb15c1c2d5e2d66395c3a0"
+  default = "index.docker.io/datadog/serverless-init:latest"
 }
 
 # Resource tags applied via the module. The harness injects the freshness tag
