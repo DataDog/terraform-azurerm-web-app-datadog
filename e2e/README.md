@@ -14,7 +14,7 @@ Install Go 1.23+, Terraform 1.5+, Azure CLI, and `dd-auth`. Sign in to Azure wit
 cd e2e && AZURE_SUBSCRIPTION_ID="$(az account show --query id -o tsv)" dd-auth --domain ddserverless.datadoghq.com -- go test -count=1 -v -timeout 45m ./...
 ```
 
-The test defaults to `eastus2`, `datadoghq.com`, and the pinned serverless-init image in `config.go`. Use `AZURE_LOCATION`, `DD_SITE`, or `E2E_SIDECAR_IMAGE` to override them.
+The test defaults to `eastus2`, `datadoghq.com`, and the latest serverless-init image. Use `AZURE_LOCATION`, `DD_SITE`, or `E2E_SIDECAR_IMAGE` to override them.
 
 ## CI authentication and configuration
 

@@ -9,7 +9,7 @@ const (
 	defaultLocation       = "eastus2"
 	defaultSite           = "datadoghq.com"
 	defaultStorageAccount = "smddsvlsprod"
-	defaultSidecarImage   = "index.docker.io/datadog/serverless-init@sha256:6fb7637628fdf31d536bc9c49fbe6304371df5e2ecdb15c1c2d5e2d66395c3a0"
+	defaultSidecarImage   = "index.docker.io/datadog/serverless-init:latest"
 )
 
 type config struct {
